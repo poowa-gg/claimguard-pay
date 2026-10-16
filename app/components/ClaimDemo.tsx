@@ -131,11 +131,15 @@ export default function ClaimDemo() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
+      if (!res.ok || !data || !data.fraud) {
+        throw new Error(data?.error || 'Failed to process claim');
+      }
       setResult(data);
-    } catch {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Connection error';
       setResult({
         decision: 'FROZEN',
-        fraud: { flags: ['API_ERROR'], riskScore: 0, tariff: 0, reason: 'Connection error' },
+        fraud: { flags: ['API_ERROR'], riskScore: 100, tariff: 0, reason: msg },
         paypal: null,
         execution_time_ms: 0,
         paypal_debug_id: 'error',
@@ -206,10 +210,14 @@ export default function ClaimDemo() {
               onChange={e => setForm(f => ({ ...f, hospitalEmail: e.target.value }))} />
           </div>
           <div className="form-group full">
-            <div className="form-check" onClick={() => setForm(f => ({ ...f, patientExists: !f.patientExists }))}>
-              <input type="checkbox" readOnly checked={form.patientExists} />
-              <label>Patient exists in NHIA registry (enrollee verified)</label>
-            </div>
+            <label className="form-check">
+              <input
+                type="checkbox"
+                checked={form.patientExists}
+                onChange={e => setForm(f => ({ ...f, patientExists: e.target.checked }))}
+              />
+              <span>Patient exists in NHIA registry (enrollee verified)</span>
+            </label>
           </div>
         </div>
 

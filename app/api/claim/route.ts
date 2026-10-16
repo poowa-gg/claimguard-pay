@@ -10,10 +10,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const fraudResult = evaluateClaim({
-      nin: body.nin,
-      nhiaId: body.nhiaId,
+      nin: typeof body.nin === 'string' ? body.nin.trim() : body.nin,
+      nhiaId: typeof body.nhiaId === 'string' ? body.nhiaId.trim() : body.nhiaId,
       procedure: body.procedure || 'Malaria',
-      amount: body.amount || 0,
+      amount: Number(body.amount) || 0,
       hospitalEmail: body.hospitalEmail || 'hospital@test.com',
       patientExists: body.patientExists,
     });
