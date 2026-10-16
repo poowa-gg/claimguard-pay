@@ -9,9 +9,31 @@ export default function Home() {
 
       {/* ── HERO ── */}
       <section className="hero">
-        <div className="hero-eyebrow">
-          <span className="hero-eyebrow-dot" />
-          Live on PayPal Sandbox — Real Orders &amp; Payouts
+        <div className="hero-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span className="hero-eyebrow-dot" />
+            Live on PayPal Sandbox — Real Orders &amp; Payouts
+          </span>
+          <a
+            href="https://mcp.paypal.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '2px 8px',
+              borderRadius: 20,
+              background: 'rgba(0, 156, 222, 0.15)',
+              border: '1px solid rgba(0, 156, 222, 0.4)',
+              color: '#009cde',
+              fontSize: 11,
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
+          >
+            🤖 mcp.paypal.com ↗
+          </a>
         </div>
         <h1>
           Ghost Enrolments<br />
@@ -129,12 +151,15 @@ export default function Home() {
         <h2 className="section-title">The Crisis Is Real. The Data Proves It.</h2>
         <div className="evidence-grid">
           {[
-            { num: '90%', title: 'Nigerians lack health insurance', src: 'Premium Times', url: 'https://www.premiumtimesng.com/news/top-news/779890-90-of-nigerians-still-lack-health-insurance-coverage-nhia-boss.html', red: false },
-            { num: '23K', title: 'Ghost enrollees expelled in 3 months', src: 'Premium Times', url: 'https://www.premiumtimesng.com/news/headlines/194887-nhis-expels-23000-fake-enrolees-in-three-months-executive-secretary.html', red: true },
-            { num: '35%', title: 'Medical claims fraudulent in East Africa', src: 'Eastleigh Voice', url: 'https://www.eastleighvoice.co.ke/health/article/2025/5/28-35-of-medical-claims-fraudulent', red: true },
-            { num: '75%', title: 'Health spending is out-of-pocket', src: 'Nairametrics', url: 'https://nairametrics.com/2024/05/12/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/', red: false },
+            { num: '90%', title: 'Nigerians lack health insurance', src: 'Punch / HCPAN', url: 'https://punchng.com/health-insurance-over-90-of-nigerians-still-uninsured-says-hcpan/', red: false },
+            { num: '10%', title: 'Covered by health insurance nationally', src: 'BusinessDay', url: 'https://businessday.ng/news/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/', red: false },
             { num: '22M+', title: 'Nigerians now on health insurance (+35%)', src: 'Vanguard', url: 'https://www.vanguardngr.com/2026/07/nigerians-on-health-insurance-hit-22million-nhia/', red: false },
-            { num: '10%', title: 'Covered by health insurance nationally', src: 'BusinessDay', url: 'https://businessday.ng/health/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/', red: false },
+            { num: '75%', title: 'Health spending is out-of-pocket', src: 'Nairametrics', url: 'https://nairametrics.com/2024/09/03/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/', red: false },
+            { num: 'Legal', title: 'Healthcare fraud and abuse deep-dive', src: 'BarristerNG', url: 'https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/', red: true },
+            { num: '23K', title: 'Ghost enrollees expelled by NHIS in 3 months', src: 'Punch', url: 'https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/', red: true },
+            { num: '28–35%', title: 'Medical claims fraudulent in East Africa', src: 'Standard Media', url: 'https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims', red: true },
+            { num: 'Tools', title: 'PayPal AI Toolkit for agentic payments', src: 'PayPal GitHub', url: 'https://github.com/paypal/ai-toolkit', red: false },
+            { num: 'Agentic', title: 'PayPal + OpenAI agentic commerce partnership', src: 'Marketing Interactive', url: 'https://www.marketing-interactive.com/paypal-partners-openai-to-drive-agentic-commerce-in-chatgpt', red: false },
           ].map(e => (
             <div key={e.title} className="evidence-card">
               <div className={`evidence-num ${e.red ? 'red' : ''}`}>{e.num}</div>
@@ -144,6 +169,38 @@ export default function Home() {
               </a>
             </div>
           ))}
+        </div>
+
+        {/* Audited Benchmark Data */}
+        <div style={{
+          marginTop: 24,
+          padding: '20px 24px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 16
+        }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>📑</span> Audited Benchmark: <code>measured-live.json</code>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+              3 audited live test takes recording decision, flags, millisecond latency, and live <code>paypal_debug_id</code>.
+            </div>
+          </div>
+          <a
+            href="/measured-live.json"
+            target="_blank"
+            rel="noreferrer"
+            className="btn-secondary"
+            style={{ padding: '10px 18px', fontSize: 13 }}
+          >
+            <span>📥</span> Open measured-live.json (200 OK) ↗
+          </a>
         </div>
       </section>
 
@@ -158,11 +215,18 @@ export default function Home() {
             { name: 'OAuth2 Token', ep: '/v1/oauth2/token', icon: '🔑' },
             { name: 'MCP Server', ep: 'mcp.paypal.com', icon: '🤖' },
           ].map(a => (
-            <div key={a.name} className="card api-card">
+            <a
+              key={a.name}
+              href={a.ep === 'mcp.paypal.com' ? 'https://mcp.paypal.com' : 'https://developer.paypal.com'}
+              target="_blank"
+              rel="noreferrer"
+              className="card api-card"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
               <div style={{ fontSize: 28, marginBottom: 10 }}>{a.icon}</div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>{a.name}</div>
               <code style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.ep}</code>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -174,6 +238,8 @@ export default function Home() {
         </div>
         <div className="footer-links">
           <a href="https://github.com/paypal/ai-toolkit" target="_blank" rel="noreferrer">PayPal AI Toolkit</a>
+          <a href="https://mcp.paypal.com" target="_blank" rel="noreferrer">PayPal MCP</a>
+          <a href="/measured-live.json" target="_blank" rel="noreferrer">measured-live.json</a>
           <a href="https://developer.paypal.com" target="_blank" rel="noreferrer">PayPal Dev</a>
           <a href="/api/claim" target="_blank" rel="noreferrer">API</a>
         </div>

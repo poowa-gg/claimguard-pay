@@ -1,6 +1,11 @@
 # ClaimGuard Pay — AI Spend Authority for Healthcare Claims
 
-**PayPal AI Hackathon 2026**
+[![PayPal MCP](https://img.shields.io/badge/PayPal_MCP-mcp.paypal.com-003087?style=for-the-badge&logo=paypal&logoColor=white)](https://mcp.paypal.com)
+[![PayPal AI Toolkit](https://img.shields.io/badge/PayPal-AI_Toolkit-0070BA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/paypal/ai-toolkit)
+[![Live Site](https://img.shields.io/badge/Live_Demo-claimguard--pay.vercel.app-00D084?style=for-the-badge&logo=vercel&logoColor=white)](https://claimguard-pay.vercel.app)
+[![API Status](https://img.shields.io/badge/Sandbox-VERIFIED_SANDBOX-00D084?style=for-the-badge)](https://claimguard-pay.vercel.app/api/claim)
+
+**PayPal AI Hackathon 2026** • GitHub: [`https://github.com/poowa-gg/claimguard-pay`](https://github.com/poowa-gg/claimguard-pay)
 
 > Ghost enrolments evaporate. Built with PayPal.
 
@@ -12,19 +17,19 @@ An estimated **23,000 ghost enrollees** were expelled in one quarter alone;
 ClaimGuard Pay is an AI spend-authority layer that blocks fraudulent claims
 **before** a single PayPal payout fires.
 
-## Evidence — All 200 OK Verified
+## Evidence — All 9 Links 200 OK Verified
 
-| # | Stat | Source |
-|---|------|--------|
-| 1 | 90% of Nigerians lack health coverage | https://www.premiumtimesng.com/news/top-news/779890-90-of-nigerians-still-lack-health-insurance-coverage-nhia-boss.html |
-| 2 | Only 10% covered by health insurance | https://businessday.ng/health/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/ |
-| 3 | 22.03M enrollees — +35% YoY | https://www.vanguardngr.com/2026/07/nigerians-on-health-insurance-hit-22million-nhia/ |
-| 4 | 75% out-of-pocket health spend | https://nairametrics.com/2024/05/12/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/ |
-| 5 | Healthcare fraud deep-dive | https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/ |
-| 6 | 23k ghost enrollees expelled | https://www.premiumtimesng.com/news/headlines/194887-nhis-expels-23000-fake-enrolees-in-three-months-executive-secretary.html |
-| 7 | Kenya: 28–35% claims fraudulent | https://www.eastleighvoice.co.ke/health/article/2025/5/28-35-of-medical-claims-fraudulent |
-| 8 | PayPal AI Toolkit | https://github.com/paypal/ai-toolkit |
-| 9 | PayPal + OpenAI ACP partnership | https://www.marketing-interactive.com/paypal-partners-openai-to-drive-agentic-commerce-in-chatgpt |
+| # | Stat | Focus | Source Link (200 OK) |
+|---|------|-------|----------------------|
+| 1 | 90% | Nigerians lack health insurance | [Punch / HCPAN](https://punchng.com/health-insurance-over-90-of-nigerians-still-uninsured-says-hcpan/) |
+| 2 | 10% | National insurance coverage rate | [BusinessDay](https://businessday.ng/news/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/) |
+| 3 | 22.03M | Registered NHIA enrollees (+35% YoY) | [Vanguard](https://www.vanguardngr.com/2026/07/nigerians-on-health-insurance-hit-22million-nhia/) |
+| 4 | 75% | Out-of-pocket health expenditure | [Nairametrics](https://nairametrics.com/2024/09/03/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/) |
+| 5 | Legal | Healthcare fraud & abuse legal analysis | [BarristerNG](https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/) |
+| 6 | 23K | Ghost enrollees expelled from scheme | [Punch](https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/) |
+| 7 | 28–35% | Medical claims fraudulent in East Africa | [Standard Media](https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims) |
+| 8 | Tools | PayPal AI Toolkit for agentic payments | [PayPal GitHub](https://github.com/paypal/ai-toolkit) |
+| 9 | Agentic | PayPal + OpenAI agentic commerce | [Marketing Interactive](https://www.marketing-interactive.com/paypal-partners-openai-to-drive-agentic-commerce-in-chatgpt) |
 
 ## Architecture
 
@@ -98,7 +103,7 @@ curl -X POST http://localhost:3000/api/claim \
 
 ## Measured Results
 
-See [`measured-live.json`](./measured-live.json) — 3 recorded takes with `paypal_debug_id` and `execution_time_ms`.
+See [`measured-live.json`](https://claimguard-pay.vercel.app/measured-live.json) (local: [`public/measured-live.json`](./public/measured-live.json)) — 3 recorded live takes with `paypal_debug_id` and `execution_time_ms`.
 
 ## Stack
 
