@@ -1,0 +1,58 @@
+[
+  {
+    "take": 1,
+    "type": "ghost_blocked",
+    "input": { "nin": null, "patientExists": false },
+    "output": {
+      "decision": "FROZEN",
+      "flags": ["MISSING_NIN", "GHOST_ENROLLEE"],
+      "riskScore": 90
+    },
+    "paypal": null,
+    "paypal_debug_id": "freeze_1792110483228",
+    "verification_status": "VERIFIED_SANDBOX",
+    "execution_time_ms": 1,
+    "mcp_server": "mcp.paypal.com"
+  },
+  {
+    "take": 2,
+    "type": "legit_approved",
+    "input": {
+      "nin": "222233334444",
+      "nhiaId": "NHIA-789",
+      "hospitalEmail": "sb-qsq4349475898@business.example.com",
+      "patientExists": true,
+      "procedure": "Malaria",
+      "amount": 8000
+    },
+    "output": {
+      "decision": "APPROVED",
+      "riskScore": 0,
+      "reason": "No fraud - verified NIN/NHIA",
+      "paypal": {
+        "order_id": "82441636FT796340L",
+        "payout_batch_id": "BATCH_1792110504393",
+        "debug_id": "f99761784f93a"
+      }
+    },
+    "paypal_debug_id": "f99761784f93a",
+    "verification_status": "VERIFIED_SANDBOX",
+    "execution_time_ms": 5278,
+    "mcp_server": "mcp.paypal.com"
+  },
+  {
+    "take": 3,
+    "type": "upcoding_blocked",
+    "input": { "procedure": "Normal Delivery", "amount": 50000 },
+    "output": {
+      "decision": "FROZEN",
+      "flags": ["MISSING_NIN", "AMOUNT_EXCEEDS_TARIFF", "UPCODING"],
+      "riskScore": 100
+    },
+    "paypal": null,
+    "paypal_debug_id": "freeze_1792110516771",
+    "verification_status": "VERIFIED_SANDBOX",
+    "execution_time_ms": 0,
+    "mcp_server": "mcp.paypal.com"
+  }
+]
