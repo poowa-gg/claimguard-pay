@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useId } from 'react';
+import { useState, useCallback } from 'react';
 
 /* ── types ── */
 interface ClaimPayload {
@@ -204,10 +204,6 @@ export default function ClaimDemo() {
     setResult(null);
   }, []);
 
-  const setMyNin = useCallback(() => {
-    setForm(f => ({ ...f, nin: '31005502980' }));
-  }, []);
-
   const handleSubmit = useCallback(async () => {
     setLoading(true);
     setResult(null);
@@ -326,11 +322,6 @@ export default function ClaimDemo() {
                 <span className="hint-badge-neutral">
                   Mandatory 11-digit NIMC identification number
                 </span>
-              )}
-              {form.nin !== '31005502980' && (
-                <button type="button" className="quick-nin-btn" onClick={setMyNin}>
-                  Insert Verified NIN (31005502980)
-                </button>
               )}
             </div>
           </div>
