@@ -23,7 +23,7 @@
       "hospitalEmail": "sb-qsq4349475898@business.example.com",
       "patientExists": true,
       "procedure": "Malaria",
-      "amount": 8000
+      "amount": 80
     },
     "output": {
       "decision": "APPROVED",
@@ -43,7 +43,7 @@
   {
     "take": 3,
     "type": "upcoding_blocked",
-    "input": { "procedure": "Normal Delivery", "amount": 50000 },
+    "input": { "procedure": "Normal Delivery", "amount": 500 },
     "output": {
       "decision": "FROZEN",
       "flags": ["MISSING_NIN", "AMOUNT_EXCEEDS_TARIFF", "UPCODING"],

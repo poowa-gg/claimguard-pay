@@ -54,12 +54,12 @@ const SAMPLE_RECORDS = [
   {
     id: 'sample-abuja',
     label: 'Abuja Hospital',
-    subtitle: 'Malaria Treatment (₦8,000)',
+    subtitle: 'Malaria Treatment ($80)',
     data: {
       nin: '31005502980', // User's verified Nigerian 11-digit NIN!
       nhiaId: 'NHIA-789012',
       procedure: 'Malaria',
-      amount: 8000,
+      amount: 80,
       hospitalEmail: 'hospital@abuja.ng',
       patientExists: true,
     },
@@ -67,12 +67,12 @@ const SAMPLE_RECORDS = [
   {
     id: 'sample-lagos',
     label: 'Lagos Maternity',
-    subtitle: 'Normal Delivery (₦50,000)',
+    subtitle: 'Normal Delivery ($500)',
     data: {
       nin: '31005502980',
       nhiaId: 'NHIA-001452',
       procedure: 'Normal Delivery',
-      amount: 50000,
+      amount: 500,
       hospitalEmail: 'claims@lagosmaternity.ng',
       patientExists: true,
     },
@@ -80,12 +80,12 @@ const SAMPLE_RECORDS = [
   {
     id: 'sample-kano',
     label: 'Kano Specialist',
-    subtitle: 'C-Section (₦65,000)',
+    subtitle: 'C-Section ($650)',
     data: {
       nin: '23456789012',
       nhiaId: 'NHIA-555231',
       procedure: 'C-Section',
-      amount: 65000,
+      amount: 650,
       hospitalEmail: 'finance@kanosurgical.ng',
       patientExists: true,
     },
@@ -98,7 +98,7 @@ const SAMPLE_RECORDS = [
       nin: '',
       nhiaId: 'NHIA-999888',
       procedure: 'Malaria',
-      amount: 9000,
+      amount: 90,
       hospitalEmail: 'accounts@ph-clinic.ng',
       patientExists: false,
     },
@@ -106,10 +106,10 @@ const SAMPLE_RECORDS = [
 ];
 
 const TARIFF_REFERENCE: Record<string, { base: number; cap: number; note: string }> = {
-  Malaria: { base: 9000, cap: 13500, note: 'Outpatient malaria protocol' },
-  'Normal Delivery': { base: 15000, cap: 22500, note: 'Standard uncomplicated delivery' },
-  'C-Section': { base: 45000, cap: 50000, note: 'Statutory maternal surgical cap: ₦50,000' },
-  Consultation: { base: 2000, cap: 3000, note: 'General outpatient visit' },
+  Malaria: { base: 90, cap: 135, note: 'Outpatient malaria protocol' },
+  'Normal Delivery': { base: 150, cap: 225, note: 'Standard uncomplicated delivery' },
+  'C-Section': { base: 450, cap: 500, note: 'Statutory maternal surgical cap: $500' },
+  Consultation: { base: 20, cap: 30, note: 'General outpatient visit' },
 };
 
 /* ── Risk Gauge SVG ── */
@@ -170,7 +170,7 @@ export default function ClaimDemo() {
     nin: '31005502980', // User's personal Nigerian 11-digit NIN ready to test!
     nhiaId: 'NHIA-789012',
     procedure: 'Malaria',
-    amount: 8000,
+    amount: 80,
     hospitalEmail: 'hospital@abuja.ng',
     patientExists: true,
   });
@@ -182,7 +182,7 @@ export default function ClaimDemo() {
   const isNinClean11 = /^\d{11}$/.test(cleanNin);
   const ninLength = cleanNin.length;
 
-  const currentTariff = TARIFF_REFERENCE[form.procedure] || { base: 9000, cap: 13500, note: '' };
+  const currentTariff = TARIFF_REFERENCE[form.procedure] || { base: 90, cap: 135, note: '' };
   const isAmountOverCap = form.amount > currentTariff.cap;
 
   const applySample = useCallback((sample: typeof SAMPLE_RECORDS[0]) => {
@@ -197,7 +197,7 @@ export default function ClaimDemo() {
       nin: '',
       nhiaId: '',
       procedure: 'Malaria',
-      amount: 9000,
+      amount: 90,
       hospitalEmail: '',
       patientExists: true,
     });
@@ -363,18 +363,18 @@ export default function ClaimDemo() {
             </select>
             <div className="field-hint-row">
               <span className="hint-badge-neutral">
-                Statutory Base Tariff: ₦{currentTariff.base.toLocaleString()}
+                Statutory Base Tariff: ${currentTariff.base.toLocaleString()}
               </span>
             </div>
           </div>
 
           {/* Claimed Amount Field */}
           <div className="form-group">
-            <label className="form-label">Claimed Amount (₦ NGN)</label>
+            <label className="form-label">Claimed Amount ($ USD)</label>
             <input
               className="form-input"
               type="number"
-              placeholder="e.g. 8000"
+              placeholder="e.g. 80"
               value={form.amount}
               onChange={e => {
                 setActiveSample(null);
@@ -384,7 +384,7 @@ export default function ClaimDemo() {
             <div className="field-hint-row">
               {isAmountOverCap ? (
                 <span className="hint-badge-invalid">
-                  ⚠ Exceeds statutory cap (₦{currentTariff.cap.toLocaleString()})
+                  ⚠ Exceeds statutory cap (${currentTariff.cap.toLocaleString()})
                 </span>
               ) : (
                 <span className="hint-badge-valid">
@@ -560,8 +560,8 @@ export default function ClaimDemo() {
 
             {/* 5. Tariff Comparison Info */}
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
-              NHIA Statutory Tariff: <strong style={{ color: 'var(--text-primary)' }}>₦{result.fraud.tariff.toLocaleString()}</strong>
-              {' '}&bull; Claimed: <strong style={{ color: form.amount > result.fraud.tariff * 1.5 ? 'var(--red)' : 'var(--text-primary)' }}>₦{form.amount.toLocaleString()}</strong>
+              NHIA Statutory Tariff: <strong style={{ color: 'var(--text-primary)' }}>${result.fraud.tariff.toLocaleString()}</strong>
+              {' '}&bull; Claimed: <strong style={{ color: form.amount > result.fraud.tariff * 1.5 ? 'var(--red)' : 'var(--text-primary)' }}>${form.amount.toLocaleString()}</strong>
             </div>
 
             {/* 6. PayPal Spend-Authority Payout Rail */}

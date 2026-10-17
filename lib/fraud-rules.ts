@@ -53,10 +53,10 @@ export interface FraudResult {
 }
 
 export const NHIA_TARIFF: Record<string, number> = {
-  Malaria: 9000,
-  'C-Section': 45000,
-  'Normal Delivery': 15000,
-  Consultation: 2000,
+  Malaria: 90,
+  'C-Section': 450,
+  'Normal Delivery': 150,
+  Consultation: 20,
 };
 
 export function evaluateClaim(input: ClaimInput): FraudResult {
@@ -85,14 +85,14 @@ export function evaluateClaim(input: ClaimInput): FraudResult {
     }
   }
 
-  const tariff = NHIA_TARIFF[input.procedure] || 9000;
+  const tariff = NHIA_TARIFF[input.procedure] || 90;
   if (input.amount > tariff * 1.5) {
     flags.push('AMOUNT_EXCEEDS_TARIFF');
   }
-  if (input.procedure === 'C-Section' && input.amount > 50000) {
+  if (input.procedure === 'C-Section' && input.amount > 500) {
     flags.push('FALSIFIED_CSECTION');
   }
-  if (input.procedure === 'Normal Delivery' && input.amount >= 40000) {
+  if (input.procedure === 'Normal Delivery' && input.amount >= 400) {
     flags.push('UPCODING');
   }
 
@@ -148,9 +148,9 @@ function classifyScenario(
       title: 'Upcoding Fraud Scenario Detected',
       category: 'UPCODING',
       badgeType: 'FROZEN',
-      summary: `Routine Normal Delivery billed at ₦${input.amount.toLocaleString()} (Tariff: ₦${tariff.toLocaleString()}).`,
+      summary: `Routine Normal Delivery billed at $${input.amount.toLocaleString()} (Tariff: $${tariff.toLocaleString()}).`,
       explanation:
-        'Provider billed a standard delivery at surgical rates (≥ ₦40,000), attempting to capture C-Section remuneration for an uncomplicated birth.',
+        'Provider billed a standard delivery at surgical rates (≥ $400), attempting to capture C-Section remuneration for an uncomplicated birth.',
     };
   }
 
@@ -160,9 +160,9 @@ function classifyScenario(
       title: 'Falsified C-Section Surcharge Detected',
       category: 'CSECTION_FRAUD',
       badgeType: 'FROZEN',
-      summary: `Caesarean Section billed at ₦${input.amount.toLocaleString()}, exceeding the statutory cap of ₦50,000.`,
+      summary: `Caesarean Section billed at $${input.amount.toLocaleString()}, exceeding the statutory cap of $500.`,
       explanation:
-        'Caesarean sections under the NHIA maternal health guidelines are capped at ₦45,000–₦50,000. Inflated provider surcharges trigger an immediate fraud freeze.',
+        'Caesarean sections under the NHIA maternal health guidelines are capped at $450–$500. Inflated provider surcharges trigger an immediate fraud freeze.',
     };
   }
 
@@ -197,7 +197,7 @@ function classifyScenario(
       title: 'Excessive Tariff Mark-up Scenario Detected',
       category: 'TARIFF_VIOLATION',
       badgeType: decision,
-      summary: `Claim of ₦${input.amount.toLocaleString()} exceeds 1.5× statutory tariff limit (Cap: ₦${(tariff * 1.5).toLocaleString()}).`,
+      summary: `Claim of $${input.amount.toLocaleString()} exceeds 1.5× statutory tariff limit (Cap: $${(tariff * 1.5).toLocaleString()}).`,
       explanation:
         'Billed amount exceeds statutory tolerance margins without prior authorization from the health authority.',
     };
@@ -221,7 +221,7 @@ function classifyScenario(
       title: 'Legitimate Verified Claim Scenario',
       category: 'LEGITIMATE',
       badgeType: 'APPROVED',
-      summary: `Verified 11-digit NIN, active NHIA enrollee, and ₦${input.amount.toLocaleString()} adheres to statutory tariff.`,
+      summary: `Verified 11-digit NIN, active NHIA enrollee, and $${input.amount.toLocaleString()} adheres to statutory tariff.`,
       explanation:
         'All clinical, identity, and tariff validations passed with zero fraud flags. Spend-authority is granted and payment has been dispatched via PayPal.',
     };
@@ -284,18 +284,18 @@ function generateAuditChecks(
       vector: 'Clinical Protocol Integrity',
       status: flags.includes('UPCODING') ? 'FAIL' : 'PASS',
       detail: flags.includes('UPCODING')
-        ? `Normal Delivery billed at ₦${input.amount.toLocaleString()} (≥ ₦40,000 surgical threshold)`
+        ? `Normal Delivery billed at $${input.amount.toLocaleString()} (≥ $400 surgical threshold)`
         : 'Clinical procedure classification aligned with diagnosis and tariff',
     },
     {
       id: 'check-csection',
-      name: 'C-Section Statutory Cap (₦50,000)',
+      name: 'C-Section Statutory Cap ($500)',
       vector: 'Maternal Care Cost Cap',
       status: flags.includes('FALSIFIED_CSECTION') ? 'FAIL' : 'PASS',
       detail: flags.includes('FALSIFIED_CSECTION')
-        ? `Billed ₦${input.amount.toLocaleString()} exceeds maternal statutory ceiling of ₦50,000`
+        ? `Billed $${input.amount.toLocaleString()} exceeds maternal statutory ceiling of $500`
         : input.procedure === 'C-Section'
-        ? `Complies with NHIA statutory C-Section cap (₦${input.amount.toLocaleString()} ≤ ₦50,000)`
+        ? `Complies with NHIA statutory C-Section cap ($${input.amount.toLocaleString()} ≤ $500)`
         : 'N/A — Non-surgical procedure',
     },
     {
@@ -304,8 +304,8 @@ function generateAuditChecks(
       vector: 'Cost Control Ceiling',
       status: flags.includes('AMOUNT_EXCEEDS_TARIFF') ? 'FAIL' : 'PASS',
       detail: flags.includes('AMOUNT_EXCEEDS_TARIFF')
-        ? `₦${input.amount.toLocaleString()} exceeds 1.5× statutory tariff (Tariff: ₦${tariff.toLocaleString()})`
-        : `₦${input.amount.toLocaleString()} is within statutory tariff limits (Base: ₦${tariff.toLocaleString()})`,
+        ? `$${input.amount.toLocaleString()} exceeds 1.5× statutory tariff (Tariff: $${tariff.toLocaleString()})`
+        : `$${input.amount.toLocaleString()} is within statutory tariff limits (Base: $${tariff.toLocaleString()})`,
     },
   ];
 }

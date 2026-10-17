@@ -70,8 +70,8 @@ POST /api/claim
 | `MISSING_NIN` | `nin` is null/empty | FROZEN |
 | `INVALID_NHIA_FORMAT` | ID doesn't match `NHIA-\d{3,}` | REVIEW |
 | `AMOUNT_EXCEEDS_TARIFF` | amount > tariff × 1.5 | REVIEW/FROZEN |
-| `FALSIFIED_CSECTION` | C-Section > ₦50,000 | FROZEN |
-| `UPCODING` | Normal Delivery ≥ ₦40,000 | FROZEN |
+| `FALSIFIED_CSECTION` | C-Section > $500 | FROZEN |
+| `UPCODING` | Normal Delivery ≥ $400 | FROZEN |
 
 ## Run Locally
 
@@ -93,12 +93,12 @@ curl -X POST http://localhost:3000/api/claim \
 # 2. Approve legit claim
 curl -X POST http://localhost:3000/api/claim \
   -H "Content-Type: application/json" \
-  -d '{"nin":"222233334444","nhiaId":"NHIA-789","hospitalEmail":"hospital@abuja.ng","patientExists":true,"procedure":"Malaria","amount":8000}'
+  -d '{"nin":"31005502980","nhiaId":"NHIA-789","hospitalEmail":"hospital@abuja.ng","patientExists":true,"procedure":"Malaria","amount":80}'
 
 # 3. Trigger upcoding block
 curl -X POST http://localhost:3000/api/claim \
   -H "Content-Type: application/json" \
-  -d '{"procedure":"Normal Delivery","amount":50000}'
+  -d '{"procedure":"Normal Delivery","amount":500}'
 ```
 
 ## Measured Results
