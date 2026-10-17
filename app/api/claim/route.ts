@@ -141,7 +141,19 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  // Booleans and public build info only; no secret values are ever returned.
   return NextResponse.json({
     status: 'ClaimGuard Pay API - PayPal AI Toolkit',
+    config: {
+      paypal_environment: process.env.PAYPAL_ENVIRONMENT === 'live' ? 'live' : 'sandbox',
+      paypal_credentials_set: Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
+      gemini_key_set: Boolean(process.env.GEMINI_API_KEY),
+      payee_pinned: Boolean(process.env.PAYPAL_PAYEE_EMAIL),
+      payout_receiver_pinned: Boolean(process.env.PAYPAL_PAYOUT_RECEIVER_EMAIL),
+    },
+    deployment: {
+      vercel_env: process.env.VERCEL_ENV ?? null,
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    },
   });
 }
