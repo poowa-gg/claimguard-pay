@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateClaim } from '@/lib/fraud-rules';
 import { createOrder, createPayoutBatch, PayPalError } from '@/lib/paypal';
-import { explainDecision } from '@/lib/ai';
+import { applyNarrativeAudit, auditNarrative, explainDecision } from '@/lib/ai';
+import type { NarrativeAudit } from '@/lib/ai';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,11 +13,13 @@ export async function POST(req: NextRequest) {
 
     const hospitalEmail =
       typeof body.hospitalEmail === 'string' ? body.hospitalEmail.trim() : '';
+    const clinicalNotes =
+      typeof body.clinicalNotes === 'string' ? body.clinicalNotes.trim() : '';
     const procedure: string = body.procedure || 'Malaria';
     const amount = Number(body.amount) || 0;
 
     const fraudStart = performance.now();
-    const fraudResult = evaluateClaim({
+    const rulesResult = evaluateClaim({
       nin: typeof body.nin === 'string' ? body.nin.trim() : body.nin,
       nhiaId: typeof body.nhiaId === 'string' ? body.nhiaId.trim() : body.nhiaId,
       procedure,
@@ -25,6 +28,29 @@ export async function POST(req: NextRequest) {
       patientExists: body.patientExists,
     });
     const fraud_decision_ms = Number((performance.now() - fraudStart).toFixed(2));
+
+    // Optional AI audit of the clinical notes. It runs only on claims the rules approved and can only
+    // escalate them to REVIEW; it never approves or unfreezes anything.
+    let fraudResult = rulesResult;
+    let narrativeAudit: NarrativeAudit | null = null;
+    if (rulesResult.decision === 'APPROVED' && clinicalNotes) {
+      narrativeAudit = await auditNarrative({
+        notes: clinicalNotes,
+        procedure,
+        amount,
+        tariff: rulesResult.tariff,
+      });
+      if (narrativeAudit) fraudResult = applyNarrativeAudit(rulesResult, narrativeAudit);
+    }
+    const ai_audit = narrativeAudit
+      ? {
+          supports_claim: narrativeAudit.supportsClaim,
+          confidence: narrativeAudit.confidence,
+          concerns: narrativeAudit.concerns,
+          model: narrativeAudit.model,
+          escalated: fraudResult.decision !== rulesResult.decision,
+        }
+      : null;
 
     const aiCtx = { procedure, amount, fraud: fraudResult };
 
@@ -40,6 +66,7 @@ export async function POST(req: NextRequest) {
         decision: fraudResult.decision,
         fraud: fraudResult,
         ai,
+        ai_audit,
         paypal: null,
         fraud_decision_ms,
         execution_time_ms: Date.now() - start,
@@ -64,6 +91,7 @@ export async function POST(req: NextRequest) {
           decision: fraudResult.decision,
           fraud: fraudResult,
           ai,
+          ai_audit,
           paypal: null,
           paypal_error: {
             message: err instanceof Error ? err.message : 'PayPal call failed',
@@ -81,6 +109,7 @@ export async function POST(req: NextRequest) {
       decision: fraudResult.decision,
       fraud: fraudResult,
       ai,
+      ai_audit,
       paypal: {
         order_id: order.id,
         order_status: order.status,

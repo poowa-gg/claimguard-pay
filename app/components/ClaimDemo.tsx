@@ -11,6 +11,7 @@ interface ClaimPayload {
   amount: number;
   hospitalEmail: string;
   patientExists: boolean;
+  clinicalNotes: string;
 }
 
 interface AuditCheck {
@@ -44,6 +45,13 @@ interface ApiResult {
     text: string;
     model: string;
   } | null;
+  ai_audit?: {
+    supports_claim: boolean;
+    confidence: 'high' | 'medium' | 'low';
+    concerns: string[];
+    model: string;
+    escalated: boolean;
+  } | null;
   paypal: {
     order_id: string;
     order_status?: string;
@@ -74,6 +82,8 @@ const SAMPLE_RECORDS = [
       amount: 80,
       hospitalEmail: 'hospital@abuja.ng',
       patientExists: true,
+      clinicalNotes:
+        'Adult presented with 3 days of fever, chills and headache. Rapid malaria test positive. Treated as an outpatient with a standard antimalarial course.',
     },
   },
   {
@@ -87,6 +97,8 @@ const SAMPLE_RECORDS = [
       amount: 500,
       hospitalEmail: 'claims@lagosmaternity.ng',
       patientExists: true,
+      clinicalNotes:
+        'Uncomplicated vaginal delivery at term. Mother and baby stable, discharged the same day.',
     },
   },
   {
@@ -100,6 +112,8 @@ const SAMPLE_RECORDS = [
       amount: 650,
       hospitalEmail: 'finance@kanosurgical.ng',
       patientExists: true,
+      clinicalNotes:
+        'Emergency caesarean section for obstructed labour. Three nights of inpatient recovery.',
     },
   },
   {
@@ -113,6 +127,22 @@ const SAMPLE_RECORDS = [
       amount: 90,
       hospitalEmail: 'accounts@ph-clinic.ng',
       patientExists: false,
+      clinicalNotes: 'Outpatient visit for fever, treated for malaria.',
+    },
+  },
+  {
+    id: 'sample-ibadan',
+    label: 'Ibadan Clinic',
+    subtitle: 'Malaria Treatment ($85)',
+    data: {
+      nin: '52019873640',
+      nhiaId: 'NHIA-440271',
+      procedure: 'Malaria',
+      amount: 85,
+      hospitalEmail: 'billing@ibadanclinic.ng',
+      patientExists: true,
+      clinicalNotes:
+        'Routine wellness check-up. No fever and no symptoms reported. Blood pressure normal. Advised on diet and exercise.',
     },
   },
 ];
@@ -185,6 +215,7 @@ export default function ClaimDemo() {
     amount: 80,
     hospitalEmail: 'hospital@abuja.ng',
     patientExists: true,
+    clinicalNotes: SAMPLE_RECORDS[0].data.clinicalNotes,
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ApiResult | null>(null);
@@ -212,6 +243,7 @@ export default function ClaimDemo() {
       amount: 90,
       hospitalEmail: '',
       patientExists: true,
+      clinicalNotes: '',
     });
     setResult(null);
   }, []);
@@ -426,6 +458,28 @@ export default function ClaimDemo() {
             </div>
           </div>
 
+          {/* Clinical Notes (optional, audited by AI) */}
+          <div className="form-group full">
+            <label className="form-label">Clinical notes (optional)</label>
+            <textarea
+              className="form-input"
+              rows={3}
+              maxLength={1500}
+              placeholder="e.g. 3 days of fever and chills, rapid malaria test positive, treated as an outpatient."
+              value={form.clinicalNotes}
+              style={{ resize: 'vertical', fontFamily: 'inherit' }}
+              onChange={e => {
+                setActiveSample(null);
+                setForm(f => ({ ...f, clinicalNotes: e.target.value }));
+              }}
+            />
+            <div className="field-hint-row">
+              <span className="hint-badge-neutral">
+                AI audit: notes that contradict an approved claim escalate it to review. The AI can never approve or unfreeze a claim.
+              </span>
+            </div>
+          </div>
+
           {/* Registry Verification Toggle */}
           <div className="form-group full">
             <label className="form-check">
@@ -538,7 +592,8 @@ export default function ClaimDemo() {
                          check.id === 'check-enrollee' ? '👤' :
                          check.id === 'check-nhia-id' ? '🏥' :
                          check.id === 'check-upcoding' ? '📈' :
-                         check.id === 'check-csection' ? '✂️' : '💰'}
+                         check.id === 'check-csection' ? '✂️' :
+                         check.id === 'check-ai-narrative' ? '🧠' : '💰'}
                       </span>
                       <div className="audit-row-text">
                         <div className="audit-row-name">{check.name}</div>
@@ -571,6 +626,30 @@ export default function ClaimDemo() {
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
                   Model: {result.ai.model}
+                </div>
+              </div>
+            )}
+
+            {/* 3c. AI Clinical Notes Audit (only when notes were audited) */}
+            {result.ai_audit && (
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+                <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
+                  AI Clinical Notes Audit
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: result.ai_audit.supports_claim ? 'var(--green)' : result.ai_audit.escalated ? 'var(--yellow)' : 'var(--text-primary)' }}>
+                  {result.ai_audit.supports_claim
+                    ? 'Notes support the claim'
+                    : result.ai_audit.escalated
+                    ? 'Notes do not support the claim. Escalated to review.'
+                    : 'Concerns noted, not enough confidence to escalate.'}
+                </div>
+                {result.ai_audit.concerns.length > 0 && (
+                  <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    {result.ai_audit.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                  </ul>
+                )}
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                  Confidence: {result.ai_audit.confidence} &bull; Model: {result.ai_audit.model}
                 </div>
               </div>
             )}

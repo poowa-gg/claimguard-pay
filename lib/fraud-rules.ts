@@ -7,7 +7,9 @@ export type FraudFlag =
   | 'FALSIFIED_CSECTION'
   | 'UPCODING'
   | 'DUPLICATE_CLAIM'
-  | 'PHANTOM_BILLING';
+  | 'PHANTOM_BILLING'
+  // Raised by the AI notes audit in lib/ai.ts, not by evaluateClaim(); intentionally not in IMPLEMENTED_FLAGS.
+  | 'AI_NARRATIVE_MISMATCH';
 
 /** Flags that evaluateClaim() can actually raise today. UI copy derives its rule count from this. */
 export const IMPLEMENTED_FLAGS: FraudFlag[] = [

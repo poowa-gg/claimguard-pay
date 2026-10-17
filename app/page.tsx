@@ -85,7 +85,7 @@ export default function Home() {
             <div className="how-icon icon-red">🔍</div>
             <div className="how-step">Step 02</div>
             <div className="how-title">Fraud Gate + AI Auditor</div>
-            <p className="how-desc">{FRAUD_RULE_COUNT} deterministic fraud signals decide in under 1 ms. An LLM then explains each decision in plain English.</p>
+            <p className="how-desc">{FRAUD_RULE_COUNT} deterministic fraud signals decide first. An AI audit of the clinical notes can only escalate a claim to review, never approve one, and an LLM explains each decision in plain English.</p>
           </div>
           <div className="how-card">
             <div className="how-icon icon-green">💸</div>
