@@ -1,55 +1,172 @@
-[
-  {
-    "take": 1,
-    "type": "ghost_blocked",
-    "input": { "nin": null, "patientExists": false },
-    "output": {
-      "decision": "FROZEN",
-      "flags": ["MISSING_NIN", "GHOST_ENROLLEE"],
-      "riskScore": 90
-    },
-    "paypal": null,
-    "paypal_debug_id": null,
-    "verification_status": "VERIFIED_SANDBOX",
-    "execution_time_ms": 1
-  },
-  {
-    "take": 2,
-    "type": "legit_approved",
-    "input": {
-      "nin": "31005502980",
-      "nhiaId": "NHIA-789",
-      "hospitalEmail": "sb-qsq4349475898@business.example.com",
-      "patientExists": true,
-      "procedure": "Malaria",
-      "amount": 80
-    },
-    "output": {
-      "decision": "APPROVED",
-      "riskScore": 0,
-      "reason": "No fraud - verified NIN/NHIA",
-      "paypal": {
-        "order_id": "82441636FT796340L",
-        "payout_batch_id": null,
-        "debug_id": "f99761784f93a"
+{
+  "recorded_at": "2026-10-17T18:24:31.935Z",
+  "base_url": "https://claimguard-pay.vercel.app",
+  "note": "Raw results of real requests to the deployed API. Failures are recorded, not hidden.",
+  "takes": [
+    {
+      "take": 1,
+      "scenario": "legit_approved",
+      "expected": "APPROVED",
+      "recorded_at": "2026-10-17T18:24:20.796Z",
+      "input": {
+        "nin": "10000000001",
+        "nhiaId": "NHIA-789012",
+        "procedure": "Malaria",
+        "amount": 80,
+        "patientExists": true,
+        "clinicalNotes": "Adult presented with 3 days of fever, chills and headache. Rapid malaria test positive. Treated as an outpatient with a standard antimalarial course.",
+        "hospitalEmail": "redacted"
+      },
+      "http_status": 200,
+      "client_roundtrip_ms": 7795,
+      "network_error": null,
+      "response": {
+        "decision": "APPROVED",
+        "flags": [],
+        "riskScore": 0,
+        "fraud_decision_ms": 0.09,
+        "execution_time_ms": 2489,
+        "ai": {
+          "text": "Your malaria claim for eighty dollars was approved with a risk score of zero out of one hundred because it met all statutory tariff limits and verification checks. The patient's National Identity Number and NHIA enrollment status both passed validation, and the clinical notes fully matched the billed procedure. No flags were raised during the review, and the claimed amount is within the allowable NHIA statutory tariff.",
+          "model": "gemini-3.5-flash-lite"
+        },
+        "ai_audit": {
+          "supports_claim": true,
+          "confidence": "high",
+          "concerns": [],
+          "model": "gemini-3.5-flash-lite",
+          "escalated": false
+        },
+        "ai_error": null,
+        "paypal": {
+          "amount_usd": 80,
+          "order_id": "8F051678X7190461T",
+          "order_status": "CREATED",
+          "payout_batch_id": "RMKBPFFYCHEUE",
+          "payout_status": "PENDING",
+          "debug_id": "f761030997c5e",
+          "payout_debug_id": "f76103029825b"
+        },
+        "paypal_error": null,
+        "error": null
       }
     },
-    "paypal_debug_id": "f99761784f93a",
-    "verification_status": "VERIFIED_SANDBOX",
-    "execution_time_ms": 5278
-  },
-  {
-    "take": 3,
-    "type": "upcoding_blocked",
-    "input": { "procedure": "Normal Delivery", "amount": 500 },
-    "output": {
-      "decision": "FROZEN",
-      "flags": ["MISSING_NIN", "AMOUNT_EXCEEDS_TARIFF", "UPCODING"],
-      "riskScore": 100
+    {
+      "take": 2,
+      "scenario": "ai_notes_mismatch",
+      "expected": "REVIEW (only if the AI audit flags the notes)",
+      "recorded_at": "2026-10-17T18:24:24.567Z",
+      "input": {
+        "nin": "10000000001",
+        "nhiaId": "NHIA-440271",
+        "procedure": "Malaria",
+        "amount": 85,
+        "patientExists": true,
+        "clinicalNotes": "Routine wellness check-up. No fever and no symptoms reported. Blood pressure normal. Advised on diet and exercise.",
+        "hospitalEmail": "redacted"
+      },
+      "http_status": 200,
+      "client_roundtrip_ms": 2717,
+      "network_error": null,
+      "response": {
+        "decision": "REVIEW",
+        "flags": [
+          "AI_NARRATIVE_MISMATCH"
+        ],
+        "riskScore": 40,
+        "fraud_decision_ms": 0.07,
+        "execution_time_ms": 2118,
+        "ai": {
+          "text": "This claim for malaria has received a review decision with a risk score of 40 out of 100 because the AI clinical notes audit failed. Specifically, the notes describe a routine wellness check-up with no fever, symptoms, malaria diagnosis, testing, or treatment documented, despite the claimed amount of $85 staying within the statutory tariff.",
+          "model": "gemini-3.5-flash-lite"
+        },
+        "ai_audit": {
+          "supports_claim": false,
+          "confidence": "high",
+          "concerns": [
+            "Notes describe a routine wellness check-up with no fever or symptoms.",
+            "No malaria diagnosis, testing, or treatment is documented."
+          ],
+          "model": "gemini-3.5-flash-lite",
+          "escalated": true
+        },
+        "ai_error": null,
+        "paypal": null,
+        "paypal_error": null,
+        "error": null
+      }
     },
-    "paypal": null,
-    "paypal_debug_id": null,
-    "verification_status": "VERIFIED_SANDBOX",
-    "execution_time_ms": 0
-  }
-]
+    {
+      "take": 3,
+      "scenario": "ghost_enrollee_blocked",
+      "expected": "FROZEN",
+      "recorded_at": "2026-10-17T18:24:26.925Z",
+      "input": {
+        "nin": "",
+        "nhiaId": "NHIA-999888",
+        "procedure": "Malaria",
+        "amount": 90,
+        "patientExists": false,
+        "hospitalEmail": "redacted"
+      },
+      "http_status": 200,
+      "client_roundtrip_ms": 1343,
+      "network_error": null,
+      "response": {
+        "decision": "FROZEN",
+        "flags": [
+          "MISSING_NIN",
+          "GHOST_ENROLLEE"
+        ],
+        "riskScore": 90,
+        "fraud_decision_ms": 0.07,
+        "execution_time_ms": 826,
+        "ai": {
+          "text": "Your $90 malaria claim was frozen due to a risk score of 90 out of 100 caused by a missing National Identification Number and an unverified enrollee profile in the active NHIA database. Although the procedural coding and tariff adherence checks passed, the claim cannot proceed until these verification failures are resolved.",
+          "model": "gemini-3.5-flash-lite"
+        },
+        "ai_audit": null,
+        "ai_error": null,
+        "paypal": null,
+        "paypal_error": null,
+        "error": null
+      }
+    },
+    {
+      "take": 4,
+      "scenario": "upcoding_blocked",
+      "expected": "FROZEN",
+      "recorded_at": "2026-10-17T18:24:30.927Z",
+      "input": {
+        "nin": "10000000001",
+        "nhiaId": "NHIA-001452",
+        "procedure": "Normal Delivery",
+        "amount": 500,
+        "patientExists": true,
+        "hospitalEmail": "redacted"
+      },
+      "http_status": 200,
+      "client_roundtrip_ms": 3000,
+      "network_error": null,
+      "response": {
+        "decision": "FROZEN",
+        "flags": [
+          "AMOUNT_EXCEEDS_TARIFF",
+          "UPCODING"
+        ],
+        "riskScore": 90,
+        "fraud_decision_ms": 0.09,
+        "execution_time_ms": 2368,
+        "ai": {
+          "text": "The claim for the normal delivery procedure has been frozen because the billed amount of $500 exceeds the statutory tariff threshold and triggered an upcoding flag. Even though the National ID and NHIA enrollee checks passed, the financial amount violates the tariff adherence rules.",
+          "model": "gemini-3.5-flash-lite"
+        },
+        "ai_audit": null,
+        "ai_error": null,
+        "paypal": null,
+        "paypal_error": null,
+        "error": null
+      }
+    }
+  ]
+}
