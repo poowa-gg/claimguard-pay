@@ -40,19 +40,6 @@ export default function Navbar() {
             <span className="nav-badge">PayPal AI Hackathon 2026</span>
           </div>
           <a
-            href="https://mcp.paypal.com"
-            target="_blank"
-            rel="noreferrer"
-            className="nav-btn"
-            style={{
-              background: 'rgba(0, 156, 222, 0.1)',
-              borderColor: 'rgba(0, 156, 222, 0.35)',
-              color: '#009cde',
-            }}
-          >
-            🤖 mcp.paypal.com
-          </a>
-          <a
             href="https://github.com/paypal/ai-toolkit"
             target="_blank"
             rel="noreferrer"
@@ -119,22 +106,7 @@ export default function Navbar() {
             🛡️ Detection Engine
           </a>
           <a href="#evidence" onClick={closeMenu} className="nav-mobile-link">
-            📊 Verified Evidence
-          </a>
-          <a
-            href="https://mcp.paypal.com"
-            target="_blank"
-            rel="noreferrer"
-            className="nav-mobile-btn"
-            style={{
-              background: 'rgba(0, 156, 222, 0.12)',
-              borderColor: 'rgba(0, 156, 222, 0.4)',
-              color: '#009cde',
-              marginBottom: 8,
-            }}
-            onClick={closeMenu}
-          >
-            🤖 mcp.paypal.com ↗
+            📊 Evidence
           </a>
           <a
             href="https://github.com/paypal/ai-toolkit"

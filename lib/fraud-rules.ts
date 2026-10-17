@@ -9,6 +9,18 @@ export type FraudFlag =
   | 'DUPLICATE_CLAIM'
   | 'PHANTOM_BILLING';
 
+/** Flags that evaluateClaim() can actually raise today. UI copy derives its rule count from this. */
+export const IMPLEMENTED_FLAGS: FraudFlag[] = [
+  'GHOST_ENROLLEE',
+  'MISSING_NIN',
+  'INVALID_NIN_FORMAT',
+  'INVALID_NHIA_FORMAT',
+  'AMOUNT_EXCEEDS_TARIFF',
+  'FALSIFIED_CSECTION',
+  'UPCODING',
+];
+export const FRAUD_RULE_COUNT = IMPLEMENTED_FLAGS.length;
+
 export interface ClaimInput {
   nin?: string | null;
   nhiaId?: string | null;

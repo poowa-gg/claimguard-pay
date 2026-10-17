@@ -1,5 +1,6 @@
 import ClaimDemo from './components/ClaimDemo';
 import Navbar from './components/Navbar';
+import { FRAUD_RULE_COUNT } from '@/lib/fraud-rules';
 
 export default function Home() {
   return (
@@ -12,28 +13,8 @@ export default function Home() {
         <div className="hero-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <span className="hero-eyebrow-dot" />
-            Live on PayPal Sandbox — Real Orders &amp; Payouts
+            PayPal Sandbox: real API calls
           </span>
-          <a
-            href="https://mcp.paypal.com"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '2px 8px',
-              borderRadius: 20,
-              background: 'rgba(0, 156, 222, 0.15)',
-              border: '1px solid rgba(0, 156, 222, 0.4)',
-              color: '#009cde',
-              fontSize: 11,
-              fontWeight: 700,
-              textDecoration: 'none',
-            }}
-          >
-            🤖 mcp.paypal.com ↗
-          </a>
         </div>
         <h1>
           Ghost Enrolments<br />
@@ -69,7 +50,7 @@ export default function Home() {
           </div>
           <div className="stat-item">
             <div className="stat-num">&lt;6s</div>
-            <div className="stat-label">End-to-End Processing</div>
+            <div className="stat-label">Claim to PayPal payout (measured)</div>
           </div>
         </div>
       </section>
@@ -103,8 +84,8 @@ export default function Home() {
           <div className="how-card">
             <div className="how-icon icon-red">🔍</div>
             <div className="how-step">Step 02</div>
-            <div className="how-title">AI Fraud Gate</div>
-            <p className="how-desc">9 fraud signals evaluated: ghost enrollee, 11-digit NIMC NIN validation, NHIA format, tariff cap, upcoding, C-Section fraud. Risk score 0–100 computed in &lt;1ms.</p>
+            <div className="how-title">Fraud Gate + AI Auditor</div>
+            <p className="how-desc">{FRAUD_RULE_COUNT} deterministic fraud signals decide in under 1 ms. An LLM then explains each decision in plain English.</p>
           </div>
           <div className="how-card">
             <div className="how-icon icon-green">💸</div>
@@ -118,7 +99,7 @@ export default function Home() {
       {/* ── FRAUD RULES ── */}
       <section className="section" id="engine">
         <div className="section-label">Detection Engine</div>
-        <h2 className="section-title">9 Fraud Signals. Deterministic. Fast.</h2>
+        <h2 className="section-title">{FRAUD_RULE_COUNT} Fraud Signals. Deterministic. Fast.</h2>
         <div className="rules-grid">
           {[
             { flag: 'GHOST_ENROLLEE', desc: 'Patient not in active NHIA registry', sev: 'Critical' },
@@ -128,16 +109,16 @@ export default function Home() {
             { flag: 'UPCODING', desc: 'Normal Delivery ≥ $400', sev: 'High' },
             { flag: 'AMOUNT_EXCEEDS_TARIFF', desc: 'Billed > 1.5× NHIA tariff', sev: 'High' },
             { flag: 'INVALID_NHIA_FORMAT', desc: 'ID doesn\'t match official NHIA/HMO format', sev: 'Medium' },
-            { flag: 'DUPLICATE_CLAIM', desc: 'Same claim submitted twice', sev: 'Medium' },
-            { flag: 'PHANTOM_BILLING', desc: 'Service not on approved list', sev: 'Medium' },
+            { flag: 'DUPLICATE_CLAIM', desc: 'Same claim submitted twice', sev: 'Planned' },
+            { flag: 'PHANTOM_BILLING', desc: 'Service not on approved list', sev: 'Planned' },
           ].map(r => (
             <div key={r.flag} className="card rule-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 6, flexWrap: 'wrap' }}>
                 <code style={{ fontSize: 11, color: 'var(--red)', fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all' }}>{r.flag}</code>
                 <span style={{
                   fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
-                  background: r.sev === 'Critical' ? 'rgba(255,77,109,0.12)' : r.sev === 'High' ? 'rgba(255,190,11,0.12)' : 'rgba(0,156,222,0.12)',
-                  color: r.sev === 'Critical' ? 'var(--red)' : r.sev === 'High' ? 'var(--yellow)' : 'var(--pp-blue)',
+                  background: r.sev === 'Critical' ? 'rgba(255,77,109,0.12)' : r.sev === 'High' ? 'rgba(255,190,11,0.12)' : r.sev === 'Planned' ? 'rgba(255,255,255,0.06)' : 'rgba(0,156,222,0.12)',
+                  color: r.sev === 'Critical' ? 'var(--red)' : r.sev === 'High' ? 'var(--yellow)' : r.sev === 'Planned' ? 'var(--text-muted)' : 'var(--pp-blue)',
                 }}>{r.sev}</span>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{r.desc}</div>
@@ -148,7 +129,7 @@ export default function Home() {
 
       {/* ── EVIDENCE ── */}
       <section className="section" id="evidence">
-        <div className="section-label">Verified Evidence — All 200 OK</div>
+        <div className="section-label">Sourced Evidence</div>
         <h2 className="section-title">The Crisis Is Real. The Data Proves It.</h2>
         <div className="evidence-grid">
           {[
@@ -160,7 +141,6 @@ export default function Home() {
             { num: '23K', title: 'Ghost enrollees expelled by NHIS in 3 months', src: 'Punch', url: 'https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/', red: true },
             { num: '28–35%', title: 'Medical claims fraudulent in East Africa', src: 'Standard Media', url: 'https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims', red: true },
             { num: 'Tools', title: 'PayPal AI Toolkit for agentic payments', src: 'PayPal GitHub', url: 'https://github.com/paypal/ai-toolkit', red: false },
-            { num: 'Agentic', title: 'PayPal + OpenAI agentic commerce partnership', src: 'Marketing Interactive', url: 'https://www.marketing-interactive.com/paypal-partners-openai-to-drive-agentic-commerce-in-chatgpt', red: false },
           ].map(e => (
             <div key={e.title} className="evidence-card">
               <div className={`evidence-num ${e.red ? 'red' : ''}`}>{e.num}</div>
@@ -200,7 +180,7 @@ export default function Home() {
             className="btn-secondary"
             style={{ padding: '10px 18px', fontSize: 13 }}
           >
-            <span>📥</span> Open measured-live.json (200 OK) ↗
+            <span>📥</span> Open measured-live.json ↗
           </a>
         </div>
       </section>
@@ -211,14 +191,14 @@ export default function Home() {
         <h2 className="section-title">Built on PayPal's Full API Surface</h2>
         <div className="apis-grid">
           {[
-            { name: 'Orders v2', ep: '/v2/checkout/orders', icon: '📦' },
-            { name: 'Payouts v1', ep: '/v1/payments/payouts', icon: '💸' },
-            { name: 'OAuth2 Token', ep: '/v1/oauth2/token', icon: '🔑' },
-            { name: 'MCP Server', ep: 'mcp.paypal.com', icon: '🤖' },
+            { name: 'Orders v2', ep: '/v2/checkout/orders', icon: '📦', href: 'https://developer.paypal.com' },
+            { name: 'Payouts v1', ep: '/v1/payments/payouts', icon: '💸', href: 'https://developer.paypal.com' },
+            { name: 'OAuth2 Token', ep: '/v1/oauth2/token', icon: '🔑', href: 'https://developer.paypal.com' },
+            { name: 'Gemini API', ep: 'AI decision explainer', icon: '🧠', href: 'https://ai.google.dev' },
           ].map(a => (
             <a
               key={a.name}
-              href={a.ep === 'mcp.paypal.com' ? 'https://mcp.paypal.com' : 'https://developer.paypal.com'}
+              href={a.href}
               target="_blank"
               rel="noreferrer"
               className="card api-card"
@@ -239,7 +219,6 @@ export default function Home() {
         </div>
         <div className="footer-links">
           <a href="https://github.com/paypal/ai-toolkit" target="_blank" rel="noreferrer">PayPal AI Toolkit</a>
-          <a href="https://mcp.paypal.com" target="_blank" rel="noreferrer">PayPal MCP</a>
           <a href="/measured-live.json" target="_blank" rel="noreferrer">measured-live.json</a>
           <a href="https://developer.paypal.com" target="_blank" rel="noreferrer">PayPal Dev</a>
           <a href="/api/claim" target="_blank" rel="noreferrer">API</a>

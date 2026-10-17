@@ -1,6 +1,5 @@
 # ClaimGuard Pay — AI Spend Authority for Healthcare Claims
 
-[![PayPal MCP](https://img.shields.io/badge/PayPal_MCP-mcp.paypal.com-003087?style=for-the-badge&logo=paypal&logoColor=white)](https://mcp.paypal.com)
 [![PayPal AI Toolkit](https://img.shields.io/badge/PayPal-AI_Toolkit-0070BA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/paypal/ai-toolkit)
 [![Live Site](https://img.shields.io/badge/Live_Demo-claimguard--pay.vercel.app-00D084?style=for-the-badge&logo=vercel&logoColor=white)](https://claimguard-pay.vercel.app)
 [![API Status](https://img.shields.io/badge/Sandbox-VERIFIED_SANDBOX-00D084?style=for-the-badge)](https://claimguard-pay.vercel.app/api/claim)
@@ -17,9 +16,9 @@ An estimated **23,000 ghost enrollees** were expelled in one quarter alone;
 ClaimGuard Pay is an AI spend-authority layer that blocks fraudulent claims
 **before** a single PayPal payout fires.
 
-## Evidence — All 9 Links 200 OK Verified
+## Sourced Evidence
 
-| # | Stat | Focus | Source Link (200 OK) |
+| # | Stat | Focus | Source Link |
 |---|------|-------|----------------------|
 | 1 | 90% | Nigerians lack health insurance | [Punch / HCPAN](https://punchng.com/health-insurance-over-90-of-nigerians-still-uninsured-says-hcpan/) |
 | 2 | 10% | National insurance coverage rate | [BusinessDay](https://businessday.ng/news/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/) |
@@ -29,7 +28,6 @@ ClaimGuard Pay is an AI spend-authority layer that blocks fraudulent claims
 | 6 | 23K | Ghost enrollees expelled from scheme | [Punch](https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/) |
 | 7 | 28–35% | Medical claims fraudulent in East Africa | [Standard Media](https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims) |
 | 8 | Tools | PayPal AI Toolkit for agentic payments | [PayPal GitHub](https://github.com/paypal/ai-toolkit) |
-| 9 | Agentic | PayPal + OpenAI agentic commerce | [Marketing Interactive](https://www.marketing-interactive.com/paypal-partners-openai-to-drive-agentic-commerce-in-chatgpt) |
 
 ## Architecture
 
@@ -60,7 +58,7 @@ POST /api/claim
 | Orders v2 | `/v2/checkout/orders` | Create verified payout order |
 | Payouts v1 | `/v1/payments/payouts` | Batch disburse to hospital |
 | OAuth2 | `/v1/oauth2/token` | Client-credentials token |
-| MCP | `mcp.paypal.com` | Agentic tool protocol |
+| Gemini API | `generativelanguage.googleapis.com` | Plain-English explanation of each decision |
 
 ## Fraud Rules
 
@@ -109,5 +107,4 @@ See [`measured-live.json`](https://claimguard-pay.vercel.app/measured-live.json)
 
 - **Next.js 14** (App Router, TypeScript)
 - **PayPal REST APIs** (Orders v2, Payouts v1, OAuth2)
-- **PayPal MCP** — `mcp.paypal.com`
-- Zero external ML dependencies — pure deterministic rule engine
+- **Gemini API** — explains decisions in plain English (the decision itself is made by the deterministic rule engine)

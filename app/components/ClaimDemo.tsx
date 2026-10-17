@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { FRAUD_RULE_COUNT } from '@/lib/fraud-rules';
 
 /* ── types ── */
 interface ClaimPayload {
@@ -39,13 +40,24 @@ interface ApiResult {
     scenario?: ScenarioClassification;
     checks?: AuditCheck[];
   };
+  ai?: {
+    text: string;
+    model: string;
+  } | null;
   paypal: {
     order_id: string;
+    order_status?: string;
     payout_batch_id: string;
-    debug_id: string;
+    payout_status?: string;
+    debug_id: string | null;
+    payout_debug_id?: string | null;
   } | null;
+  paypal_error?: {
+    message: string;
+    debug_id: string | null;
+  };
+  fraud_decision_ms?: number;
   execution_time_ms: number;
-  paypal_debug_id: string;
   message?: string;
 }
 
@@ -214,7 +226,8 @@ export default function ClaimDemo() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok || !data || !data.fraud) {
+      // A 502 with paypal_error still carries a full fraud result, so only bail when it is missing.
+      if (!data || !data.fraud) {
         throw new Error(data?.error || 'Failed to process claim');
       }
       setResult(data);
@@ -239,7 +252,6 @@ export default function ClaimDemo() {
         },
         paypal: null,
         execution_time_ms: 0,
-        paypal_debug_id: 'error',
       });
     } finally {
       setLoading(false);
@@ -463,7 +475,7 @@ export default function ClaimDemo() {
             </span>
             <span style={{ maxWidth: 360, fontSize: 13, color: 'var(--text-secondary)' }}>
               Enter claim figures on the left and click <strong>&quot;Run Fraud Check + PayPal&quot;</strong>.
-              The AI engine evaluates 6 threat vectors, diagnoses the resultant scenario, and controls PayPal spend-authority.
+              The engine evaluates {FRAUD_RULE_COUNT} fraud rules, diagnoses the resultant scenario, and controls PayPal spend-authority.
             </span>
           </div>
         )}
@@ -486,7 +498,8 @@ export default function ClaimDemo() {
             <div className={`decision-badge ${decisionClass}`}>
               {decisionIcon} {result.decision}
               {result.decision === 'FROZEN' && ' — Payment Blocked (Fraud Detected)'}
-              {result.decision === 'APPROVED' && ' — Dispatched via PayPal'}
+              {result.decision === 'APPROVED' && result.paypal && ' — Dispatched via PayPal Sandbox'}
+              {result.decision === 'APPROVED' && !result.paypal && ' — PayPal Call Failed'}
               {result.decision === 'REVIEW' && ' — Secondary Review Required'}
             </div>
 
@@ -539,7 +552,7 @@ export default function ClaimDemo() {
                 ))
               ) : (
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  Evaluated against 8 core NHIA fraud rules.
+                  Evaluated against {FRAUD_RULE_COUNT} NHIA fraud rules.
                 </div>
               )}
             </div>
@@ -547,13 +560,28 @@ export default function ClaimDemo() {
             {/* 3. Risk Gauge */}
             <RiskGauge score={result.fraud.riskScore} />
 
+            {/* 3b. AI Audit Explanation (hidden when the AI call returned nothing) */}
+            {result.ai && (
+              <div style={{ background: 'rgba(0,156,222,0.06)', border: '1px solid rgba(0,156,222,0.25)', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+                <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pp-blue)' }}>
+                  AI Audit Explanation
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-primary)' }}>
+                  {result.ai.text}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                  Model: {result.ai.model}
+                </div>
+              </div>
+            )}
+
             {/* 4. Active Fraud Signal Chips */}
             <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
               Active Fraud Signals Triggered
             </div>
             <div className="flags-wrap">
               {result.fraud.flags.length === 0
-                ? <span className="flag-chip" style={{ background: 'rgba(0,208,132,0.1)', color: 'var(--green)', border: '1px solid rgba(0,208,132,0.3)' }}>✓ CLEAN — All 6 threat vectors passed</span>
+                ? <span className="flag-chip" style={{ background: 'rgba(0,208,132,0.1)', color: 'var(--green)', border: '1px solid rgba(0,208,132,0.3)' }}>✓ CLEAN — All {FRAUD_RULE_COUNT} fraud rules passed</span>
                 : result.fraud.flags.map(f => <FlagChip key={f} flag={f} />)
               }
             </div>
@@ -565,37 +593,60 @@ export default function ClaimDemo() {
             </div>
 
             {/* 6. PayPal Spend-Authority Payout Rail */}
+            {result.paypal_error && (
+              <div style={{ background: 'rgba(255,77,109,0.08)', border: '1px solid rgba(255,77,109,0.4)', borderRadius: 12, padding: 16, marginTop: 12, fontSize: 13, color: 'var(--red)' }}>
+                <strong>Approved by rules, but the PayPal sandbox call failed</strong>
+                <div style={{ marginTop: 6, color: 'var(--text-primary)' }}>{result.paypal_error.message}</div>
+                {result.paypal_error.debug_id && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                    PayPal debug_id: {result.paypal_error.debug_id}
+                  </div>
+                )}
+              </div>
+            )}
+
             {result.paypal ? (
               <div className="paypal-card">
                 <div className="paypal-card-header">
                   <PPLogo /> PayPal Sandbox — Live Transaction Dispatched
                 </div>
                 <div className="pp-row">
-                  <span className="pp-row-label">Order ID</span>
+                  <span className="pp-row-label">Sandbox Order ID</span>
                   <span className="pp-row-val">{result.paypal.order_id}</span>
                 </div>
                 <div className="pp-row">
-                  <span className="pp-row-label">Payout Batch</span>
+                  <span className="pp-row-label">Payout Batch ID</span>
                   <span className="pp-row-val">{result.paypal.payout_batch_id}</span>
                 </div>
-                <div className="pp-row">
-                  <span className="pp-row-label">PayPal Debug ID</span>
-                  <span className="pp-row-val">{result.paypal.debug_id}</span>
-                </div>
+                {result.paypal.payout_status && (
+                  <div className="pp-row">
+                    <span className="pp-row-label">Payout status</span>
+                    <span className="pp-row-val">{result.paypal.payout_status}</span>
+                  </div>
+                )}
+                {result.paypal.debug_id && (
+                  <div className="pp-row">
+                    <span className="pp-row-label">PayPal Debug ID</span>
+                    <span className="pp-row-val">{result.paypal.debug_id}</span>
+                  </div>
+                )}
               </div>
             ) : (
               result.decision === 'FROZEN' && (
                 <div style={{ background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.2)', borderRadius: 12, padding: 16, marginTop: 12, fontSize: 13, color: 'var(--red)' }}>
                   🔒 <strong>PayPal payout suppressed</strong> — spend-authority gate intercepted payment before API execution. Fund leakage prevented.
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                    Gate Reference: {result.paypal_debug_id}
-                  </div>
                 </div>
               )
             )}
 
             <div className="exec-time">
-              ⚡ Evaluated in <span>{result.execution_time_ms.toLocaleString()}ms</span>
+              {typeof result.fraud_decision_ms === 'number' && (
+                <>
+                  ⚡ Fraud decision <span>{result.fraud_decision_ms.toLocaleString()}ms</span>
+                  {' '}&bull;{' '}
+                </>
+              )}
+              End to end <span>{result.execution_time_ms.toLocaleString()}ms</span>
             </div>
           </>
         )}
