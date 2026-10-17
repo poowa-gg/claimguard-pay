@@ -83,8 +83,7 @@ No identifier in this project is ever generated locally.
 
 Gemini is called through the REST API in `lib/ai.ts`. The default model is `gemini-3.5-flash-lite`, overridable with
 `GEMINI_MODEL`. Patient identifiers (NIN, NHIA ID) and emails are never sent to the model. The notes audit uses
-structured JSON output at temperature 0, treats the notes as untrusted data, and is tested in isolation with a stubbed
-model (verdict handling, escalation limits, malformed replies).
+structured JSON output at temperature 0, treats the notes as untrusted data, and discards malformed replies.
 
 ## For judges: try it
 
