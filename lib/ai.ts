@@ -63,13 +63,17 @@ const AUDIT_SCHEMA = {
 /** One Gemini generateContent call. Returns null (and logs) on any failure so callers never fabricate output. */
 async function callGemini(
   label: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  onError?: (reason: string) => void
 ): Promise<{ text: string; model: string } | null> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    console.error(`[ai] GEMINI_API_KEY is not set; skipping ${label}`);
+  const fail = (reason: string): null => {
+    console.error(`[ai] ${label}: ${reason}`);
+    onError?.(`${label}: ${reason}`);
     return null;
-  }
+  };
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return fail('GEMINI_API_KEY is not set');
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -87,21 +91,16 @@ async function callGemini(
     );
 
     if (!res.ok) {
-      console.error(`[ai] ${label} request failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
-      return null;
+      return fail(`request failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
     }
 
     const data = await res.json();
     const parts: Array<{ text?: string }> = data?.candidates?.[0]?.content?.parts ?? [];
     const text = parts.map((p) => p.text ?? '').join('').trim();
-    if (!text) {
-      console.error(`[ai] ${label} returned no text`);
-      return null;
-    }
+    if (!text) return fail('returned no text');
     return { text, model: data?.modelVersion || GEMINI_MODEL };
   } catch (e) {
-    console.error(`[ai] ${label} error:`, e instanceof Error ? e.message : e);
-    return null;
+    return fail(e instanceof Error ? e.message : String(e));
   } finally {
     clearTimeout(timer);
   }
@@ -111,7 +110,10 @@ async function callGemini(
  * Asks Gemini to explain a decision the system already made.
  * Patient identifiers (NIN, NHIA ID) and the hospital email are deliberately not sent.
  */
-export async function explainDecision(ctx: ExplainContext): Promise<AiExplanation | null> {
+export async function explainDecision(
+  ctx: ExplainContext,
+  onError?: (reason: string) => void
+): Promise<AiExplanation | null> {
   const { fraud, procedure, amount } = ctx;
   const facts = [
     `Decision: ${fraud.decision}`,
@@ -128,14 +130,17 @@ export async function explainDecision(ctx: ExplainContext): Promise<AiExplanatio
     systemInstruction: { parts: [{ text: EXPLAIN_PROMPT }] },
     contents: [{ role: 'user', parts: [{ text: facts }] }],
     generationConfig: { temperature: 0.2, maxOutputTokens: 400 },
-  });
+  }, onError);
 }
 
 /**
  * Asks Gemini whether free-text clinical notes support the billed claim, using structured JSON output.
  * Returns null when the notes are empty, the call fails, or the reply is malformed.
  */
-export async function auditNarrative(ctx: NarrativeContext): Promise<NarrativeAudit | null> {
+export async function auditNarrative(
+  ctx: NarrativeContext,
+  onError?: (reason: string) => void
+): Promise<NarrativeAudit | null> {
   const notes = ctx.notes.trim().slice(0, MAX_NOTES_CHARS);
   if (!notes) return null;
 
@@ -156,7 +161,7 @@ export async function auditNarrative(ctx: NarrativeContext): Promise<NarrativeAu
       responseMimeType: 'application/json',
       responseSchema: AUDIT_SCHEMA,
     },
-  });
+  }, onError);
   if (!reply) return null;
 
   try {
@@ -168,6 +173,7 @@ export async function auditNarrative(ctx: NarrativeContext): Promise<NarrativeAu
       !Array.isArray(parsed?.concerns)
     ) {
       console.error('[ai] narrative audit reply had an unexpected shape');
+      onError?.('AI narrative audit: reply had an unexpected shape');
       return null;
     }
     const concerns = (parsed.concerns as unknown[])
@@ -177,6 +183,7 @@ export async function auditNarrative(ctx: NarrativeContext): Promise<NarrativeAu
     return { supportsClaim: parsed.supports_claim, confidence, concerns, model: reply.model };
   } catch {
     console.error('[ai] narrative audit reply was not valid JSON');
+    onError?.('AI narrative audit: reply was not valid JSON');
     return null;
   }
 }

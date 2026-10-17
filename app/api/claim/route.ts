@@ -31,15 +31,22 @@ export async function POST(req: NextRequest) {
 
     // Optional AI audit of the clinical notes. It runs only on claims the rules approved and can only
     // escalate them to REVIEW; it never approves or unfreezes anything.
+    const aiErrors: string[] = [];
+    const onAiError = (reason: string) => {
+      aiErrors.push(reason);
+    };
     let fraudResult = rulesResult;
     let narrativeAudit: NarrativeAudit | null = null;
     if (rulesResult.decision === 'APPROVED' && clinicalNotes) {
-      narrativeAudit = await auditNarrative({
-        notes: clinicalNotes,
-        procedure,
-        amount,
-        tariff: rulesResult.tariff,
-      });
+      narrativeAudit = await auditNarrative(
+        {
+          notes: clinicalNotes,
+          procedure,
+          amount,
+          tariff: rulesResult.tariff,
+        },
+        onAiError
+      );
       if (narrativeAudit) fraudResult = applyNarrativeAudit(rulesResult, narrativeAudit);
     }
     const ai_audit = narrativeAudit
@@ -61,12 +68,13 @@ export async function POST(req: NextRequest) {
 
     // FROZEN and REVIEW claims never reach PayPal.
     if (fraudResult.decision !== 'APPROVED') {
-      const ai = await explainDecision(aiCtx);
+      const ai = await explainDecision(aiCtx, onAiError);
       return NextResponse.json({
         decision: fraudResult.decision,
         fraud: fraudResult,
         ai,
         ai_audit,
+        ai_error: aiErrors.length ? aiErrors.join(' | ') : undefined,
         paypal: null,
         fraud_decision_ms,
         execution_time_ms: Date.now() - start,
@@ -81,7 +89,7 @@ export async function POST(req: NextRequest) {
       ])
         .then(([order, payout]) => ({ ok: true as const, order, payout }))
         .catch((error: unknown) => ({ ok: false as const, error })),
-      explainDecision(aiCtx),
+      explainDecision(aiCtx, onAiError),
     ]);
 
     if (!paypalResult.ok) {
@@ -92,6 +100,7 @@ export async function POST(req: NextRequest) {
           fraud: fraudResult,
           ai,
           ai_audit,
+          ai_error: aiErrors.length ? aiErrors.join(' | ') : undefined,
           paypal: null,
           paypal_error: {
             message: err instanceof Error ? err.message : 'PayPal call failed',
@@ -110,6 +119,7 @@ export async function POST(req: NextRequest) {
       fraud: fraudResult,
       ai,
       ai_audit,
+      ai_error: aiErrors.length ? aiErrors.join(' | ') : undefined,
       paypal: {
         order_id: order.id,
         order_status: order.status,
