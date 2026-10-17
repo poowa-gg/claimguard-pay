@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         execution_time_ms: Date.now() - start,
         verification_status: 'VERIFIED_SANDBOX',
         paypal_debug_id: `freeze_${Date.now()}`,
-        message: 'Ghost enrollee blocked - 23k pattern',
+        message: fraudResult.scenario.summary,
       });
     }
 
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       verification_status: 'VERIFIED_SANDBOX',
       paypal_debug_id: order.debug_id,
       mcp_server: 'mcp.paypal.com',
+      message: fraudResult.scenario.summary,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown error';

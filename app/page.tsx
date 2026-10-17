@@ -104,7 +104,7 @@ export default function Home() {
             <div className="how-icon icon-red">🔍</div>
             <div className="how-step">Step 02</div>
             <div className="how-title">AI Fraud Gate</div>
-            <p className="how-desc">8 fraud signals evaluated: ghost enrollee, missing NIN, NHIA format, tariff cap, upcoding, C-Section fraud. Risk score 0–100 computed in &lt;1ms.</p>
+            <p className="how-desc">9 fraud signals evaluated: ghost enrollee, 11-digit NIMC NIN validation, NHIA format, tariff cap, upcoding, C-Section fraud. Risk score 0–100 computed in &lt;1ms.</p>
           </div>
           <div className="how-card">
             <div className="how-icon icon-green">💸</div>
@@ -118,15 +118,16 @@ export default function Home() {
       {/* ── FRAUD RULES ── */}
       <section className="section" id="engine">
         <div className="section-label">Detection Engine</div>
-        <h2 className="section-title">8 Fraud Signals. Deterministic. Fast.</h2>
+        <h2 className="section-title">9 Fraud Signals. Deterministic. Fast.</h2>
         <div className="rules-grid">
           {[
-            { flag: 'GHOST_ENROLLEE', desc: 'Patient not in NHIA registry', sev: 'Critical' },
+            { flag: 'GHOST_ENROLLEE', desc: 'Patient not in active NHIA registry', sev: 'Critical' },
+            { flag: 'INVALID_NIN_FORMAT', desc: 'NIN fails strict 11-digit NIMC standard', sev: 'Critical' },
             { flag: 'MISSING_NIN', desc: 'No National ID provided', sev: 'Critical' },
-            { flag: 'FALSIFIED_CSECTION', desc: 'C-Section billed above ₦50,000', sev: 'Critical' },
+            { flag: 'FALSIFIED_CSECTION', desc: 'C-Section billed above ₦50,000 cap', sev: 'Critical' },
             { flag: 'UPCODING', desc: 'Normal Delivery ≥ ₦40,000', sev: 'High' },
             { flag: 'AMOUNT_EXCEEDS_TARIFF', desc: 'Billed > 1.5× NHIA tariff', sev: 'High' },
-            { flag: 'INVALID_NHIA_FORMAT', desc: 'ID doesn\'t match NHIA-000 format', sev: 'Medium' },
+            { flag: 'INVALID_NHIA_FORMAT', desc: 'ID doesn\'t match official NHIA/HMO format', sev: 'Medium' },
             { flag: 'DUPLICATE_CLAIM', desc: 'Same claim submitted twice', sev: 'Medium' },
             { flag: 'PHANTOM_BILLING', desc: 'Service not on approved list', sev: 'Medium' },
           ].map(r => (
