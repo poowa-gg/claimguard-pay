@@ -28,6 +28,11 @@ export async function POST(req: NextRequest) {
 
     const aiCtx = { procedure, amount, fraud: fraudResult };
 
+    // Demo hardening: the sandbox account that receives the order and the payout can be pinned
+    // server-side, so a visitor typing an arbitrary email cannot make PayPal reject the call.
+    const orderPayeeEmail = process.env.PAYPAL_PAYEE_EMAIL?.trim() || hospitalEmail;
+    const payoutReceiverEmail = process.env.PAYPAL_PAYOUT_RECEIVER_EMAIL?.trim() || hospitalEmail;
+
     // FROZEN and REVIEW claims never reach PayPal.
     if (fraudResult.decision !== 'APPROVED') {
       const ai = await explainDecision(aiCtx);
@@ -44,8 +49,8 @@ export async function POST(req: NextRequest) {
 
     const [paypalResult, ai] = await Promise.all([
       Promise.all([
-        createOrder(fraudResult.tariff, hospitalEmail),
-        createPayoutBatch(fraudResult.tariff, hospitalEmail),
+        createOrder(fraudResult.tariff, orderPayeeEmail),
+        createPayoutBatch(fraudResult.tariff, payoutReceiverEmail),
       ])
         .then(([order, payout]) => ({ ok: true as const, order, payout }))
         .catch((error: unknown) => ({ ok: false as const, error })),
