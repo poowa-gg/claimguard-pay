@@ -49,8 +49,8 @@ export default function Home() {
             <div className="stat-label">Nigerians Lack Coverage</div>
           </div>
           <div className="stat-item">
-            <div className="stat-num">&lt;6s</div>
-            <div className="stat-label">Claim to PayPal payout (measured)</div>
+            <div className="stat-num">~2.5s</div>
+            <div className="stat-label">Claim to PayPal order + payout submitted (measured, incl. AI)</div>
           </div>
         </div>
       </section>
