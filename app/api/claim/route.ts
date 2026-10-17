@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   // Booleans and public build info only; no secret values are ever returned.
   return NextResponse.json({
-    status: 'ClaimGuard Pay API - PayPal AI Toolkit',
+    status: 'ClaimGuard Pay API',
     config: {
       paypal_environment: process.env.PAYPAL_ENVIRONMENT === 'live' ? 'live' : 'sandbox',
       paypal_credentials_set: Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),

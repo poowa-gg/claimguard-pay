@@ -90,7 +90,7 @@ export default function Home() {
           <div className="how-card">
             <div className="how-icon icon-green">💸</div>
             <div className="how-step">Step 03</div>
-            <div className="how-title">PayPal Dispatched or Frozen</div>
+            <div className="how-title">PayPal Order + Payout, or Frozen</div>
             <p className="how-desc">APPROVED claims trigger a real PayPal order + payout batch. FROZEN claims never reach PayPal — zero wasted API calls, zero leaked funds.</p>
           </div>
         </div>
@@ -140,7 +140,6 @@ export default function Home() {
             { num: 'Legal', title: 'Healthcare fraud and abuse deep-dive', src: 'BarristerNG', url: 'https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/', red: true },
             { num: '23K', title: 'Ghost enrollees expelled by NHIS in 3 months', src: 'Punch', url: 'https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/', red: true },
             { num: '28–35%', title: 'Medical claims fraudulent in East Africa', src: 'Standard Media', url: 'https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims', red: true },
-            { num: 'Tools', title: 'PayPal AI Toolkit for agentic payments', src: 'PayPal GitHub', url: 'https://github.com/paypal/ai-toolkit', red: false },
           ].map(e => (
             <div key={e.title} className="evidence-card">
               <div className={`evidence-num ${e.red ? 'red' : ''}`}>{e.num}</div>
@@ -218,7 +217,7 @@ export default function Home() {
           ClaimGuard Pay — PayPal AI Hackathon 2026
         </div>
         <div className="footer-links">
-          <a href="https://github.com/paypal/ai-toolkit" target="_blank" rel="noreferrer">PayPal AI Toolkit</a>
+          <a href="https://github.com/poowa-gg/claimguard-pay" target="_blank" rel="noreferrer">GitHub</a>
           <a href="/measured-live.json" target="_blank" rel="noreferrer">measured-live.json</a>
           <a href="https://developer.paypal.com" target="_blank" rel="noreferrer">PayPal Dev</a>
           <a href="/api/claim" target="_blank" rel="noreferrer">API</a>

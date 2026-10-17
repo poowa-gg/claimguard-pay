@@ -77,7 +77,7 @@ const SAMPLE_RECORDS = [
     label: 'Abuja Hospital',
     subtitle: 'Malaria Treatment ($80)',
     data: {
-      nin: '31005502980', // User's verified Nigerian 11-digit NIN!
+      nin: '10000000001', // synthetic test NIN, not a real person
       nhiaId: 'NHIA-789012',
       procedure: 'Malaria',
       amount: 80,
@@ -92,7 +92,7 @@ const SAMPLE_RECORDS = [
     label: 'Lagos Maternity',
     subtitle: 'Normal Delivery ($500)',
     data: {
-      nin: '31005502980',
+      nin: '10000000001',
       nhiaId: 'NHIA-001452',
       procedure: 'Normal Delivery',
       amount: 500,
@@ -210,7 +210,7 @@ function PPLogo() {
 export default function ClaimDemo() {
   const [activeSample, setActiveSample] = useState<string | null>('sample-abuja');
   const [form, setForm] = useState<ClaimPayload>({
-    nin: '31005502980', // User's personal Nigerian 11-digit NIN ready to test!
+    nin: '10000000001', // synthetic test NIN
     nhiaId: 'NHIA-789012',
     procedure: 'Malaria',
     amount: 80,
@@ -346,7 +346,7 @@ export default function ClaimDemo() {
             </label>
             <input
               className="form-input"
-              placeholder="e.g. 31005502980 (11 digits)"
+              placeholder="e.g. 10000000001 (11 digits)"
               value={form.nin}
               maxLength={14}
               onChange={e => {
@@ -553,7 +553,7 @@ export default function ClaimDemo() {
             <div className={`decision-badge ${decisionClass}`}>
               {decisionIcon} {result.decision}
               {result.decision === 'FROZEN' && ' — Payment Blocked (Fraud Detected)'}
-              {result.decision === 'APPROVED' && result.paypal && ' — Dispatched via PayPal Sandbox'}
+              {result.decision === 'APPROVED' && result.paypal && ' — order created, payout submitted (PayPal Sandbox)'}
               {result.decision === 'APPROVED' && !result.paypal && ' — PayPal Call Failed'}
               {result.decision === 'REVIEW' && ' — Secondary Review Required'}
             </div>
@@ -688,7 +688,7 @@ export default function ClaimDemo() {
             {result.paypal ? (
               <div className="paypal-card">
                 <div className="paypal-card-header">
-                  <PPLogo /> PayPal Sandbox — Live Transaction Dispatched
+                  <PPLogo /> PayPal Sandbox — Order created, payout submitted
                 </div>
                 {typeof result.paypal.amount_usd === 'number' && (
                   <div className="pp-row">

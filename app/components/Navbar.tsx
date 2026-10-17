@@ -40,12 +40,12 @@ export default function Navbar() {
             <span className="nav-badge">PayPal AI Hackathon 2026</span>
           </div>
           <a
-            href="https://github.com/paypal/ai-toolkit"
+            href="https://github.com/poowa-gg/claimguard-pay"
             target="_blank"
             rel="noreferrer"
             className="nav-btn"
           >
-            ★ PayPal AI Toolkit
+            ★ Source on GitHub
           </a>
         </div>
 
@@ -109,13 +109,13 @@ export default function Navbar() {
             📊 Evidence
           </a>
           <a
-            href="https://github.com/paypal/ai-toolkit"
+            href="https://github.com/poowa-gg/claimguard-pay"
             target="_blank"
             rel="noreferrer"
             className="nav-mobile-btn"
             onClick={closeMenu}
           >
-            ★ PayPal AI Toolkit ↗
+            ★ Source on GitHub ↗
           </a>
         </div>
       )}

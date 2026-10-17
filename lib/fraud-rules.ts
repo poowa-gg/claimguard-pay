@@ -189,7 +189,7 @@ function classifyScenario(
       badgeType: 'FROZEN',
       summary: `NIN (${cleanNin || 'empty'}) does not match the 11-digit Nigeria NIMC national identity standard.`,
       explanation:
-        'The National Identity Management Commission (NIMC) strictly issues 11 numeric digits for Nigerian citizens and legal residents (e.g. 31005502980). Malformed identifiers are blocked.',
+        'The National Identity Management Commission (NIMC) strictly issues 11 numeric digits for Nigerian citizens and legal residents (e.g. 10000000001). Malformed identifiers are blocked.',
     };
   }
 
@@ -237,7 +237,7 @@ function classifyScenario(
       badgeType: 'APPROVED',
       summary: `Verified 11-digit NIN, active NHIA enrollee, and $${input.amount.toLocaleString()} adheres to statutory tariff.`,
       explanation:
-        'All clinical, identity, and tariff validations passed with zero fraud flags. Spend-authority is granted and payment has been dispatched via PayPal.',
+        'All clinical, identity, and tariff validations passed with zero fraud flags. Spend-authority is granted; a PayPal sandbox order was created and a payout was submitted.',
     };
   }
 
