@@ -53,6 +53,7 @@ interface ApiResult {
     escalated: boolean;
   } | null;
   paypal: {
+    amount_usd?: number;
     order_id: string;
     order_status?: string;
     payout_batch_id: string;
@@ -689,6 +690,12 @@ export default function ClaimDemo() {
                 <div className="paypal-card-header">
                   <PPLogo /> PayPal Sandbox — Live Transaction Dispatched
                 </div>
+                {typeof result.paypal.amount_usd === 'number' && (
+                  <div className="pp-row">
+                    <span className="pp-row-label">Sandbox amount (USD)</span>
+                    <span className="pp-row-val">${result.paypal.amount_usd.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="pp-row">
                   <span className="pp-row-label">Sandbox Order ID</span>
                   <span className="pp-row-val">{result.paypal.order_id}</span>

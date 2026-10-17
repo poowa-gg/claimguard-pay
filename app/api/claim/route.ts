@@ -82,10 +82,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Spend authority never exceeds the statutory tariff, and never exceeds what was actually claimed.
+    const payoutAmount = Math.min(amount, fraudResult.tariff);
+
     const [paypalResult, ai] = await Promise.all([
       Promise.all([
-        createOrder(fraudResult.tariff, orderPayeeEmail),
-        createPayoutBatch(fraudResult.tariff, payoutReceiverEmail),
+        createOrder(payoutAmount, orderPayeeEmail),
+        createPayoutBatch(payoutAmount, payoutReceiverEmail),
       ])
         .then(([order, payout]) => ({ ok: true as const, order, payout }))
         .catch((error: unknown) => ({ ok: false as const, error })),
@@ -121,6 +124,7 @@ export async function POST(req: NextRequest) {
       ai_audit,
       ai_error: aiErrors.length ? aiErrors.join(' | ') : undefined,
       paypal: {
+        amount_usd: payoutAmount,
         order_id: order.id,
         order_status: order.status,
         payout_batch_id: payout.batch_id,

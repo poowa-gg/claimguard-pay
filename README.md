@@ -1,110 +1,157 @@
-# ClaimGuard Pay — AI Spend Authority for Healthcare Claims
+# ClaimGuard Pay: AI Spend Authority for Healthcare Claims
 
-[![PayPal AI Toolkit](https://img.shields.io/badge/PayPal-AI_Toolkit-0070BA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/paypal/ai-toolkit)
-[![Live Site](https://img.shields.io/badge/Live_Demo-claimguard--pay.vercel.app-00D084?style=for-the-badge&logo=vercel&logoColor=white)](https://claimguard-pay.vercel.app)
-[![API Status](https://img.shields.io/badge/Sandbox-VERIFIED_SANDBOX-00D084?style=for-the-badge)](https://claimguard-pay.vercel.app/api/claim)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-claimguard--pay.vercel.app-00D084?style=for-the-badge&logo=vercel&logoColor=white)](https://claimguard-pay.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](./LICENSE)
 
-**PayPal AI Hackathon 2026** • GitHub: [`https://github.com/poowa-gg/claimguard-pay`](https://github.com/poowa-gg/claimguard-pay)
+**PayPal AI Hackathon 2026** · Repo: [github.com/poowa-gg/claimguard-pay](https://github.com/poowa-gg/claimguard-pay)
 
-> Ghost enrolments evaporate. Built with PayPal.
+> Ghost enrolments evaporate. Fraud is stopped before PayPal is ever called.
 
-## The Problem
+## The problem
 
-Nigeria's NHIA covers only ~10% of citizens yet processes claims worth billions.
-An estimated **23,000 ghost enrollees** were expelled in one quarter alone;
-28–35% of medical claims across East Africa are fraudulent.
-ClaimGuard Pay is an AI spend-authority layer that blocks fraudulent claims
-**before** a single PayPal payout fires.
+Nigeria's national health insurance scheme (NHIA) covers only about 10% of citizens, and fraud drains it:
+ghost enrollees, inflated bills, upcoded procedures. Reported figures include 23,000 ghost enrollees expelled in
+one quarter and 28–35% of medical claims judged fraudulent in East Africa (sources below).
 
-## Sourced Evidence
+ClaimGuard Pay is a spend-authority layer. A hospital submits a claim, the system decides whether money may
+move, and only a clean claim ever reaches PayPal.
 
-| # | Stat | Focus | Source Link |
-|---|------|-------|----------------------|
-| 1 | 90% | Nigerians lack health insurance | [Punch / HCPAN](https://punchng.com/health-insurance-over-90-of-nigerians-still-uninsured-says-hcpan/) |
-| 2 | 10% | National insurance coverage rate | [BusinessDay](https://businessday.ng/news/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/) |
-| 3 | 22.03M | Registered NHIA enrollees (+35% YoY) | [Vanguard](https://www.vanguardngr.com/2026/07/nigerians-on-health-insurance-hit-22million-nhia/) |
-| 4 | 75% | Out-of-pocket health expenditure | [Nairametrics](https://nairametrics.com/2024/09/03/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/) |
-| 5 | Legal | Healthcare fraud & abuse legal analysis | [BarristerNG](https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/) |
-| 6 | 23K | Ghost enrollees expelled from scheme | [Punch](https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/) |
-| 7 | 28–35% | Medical claims fraudulent in East Africa | [Standard Media](https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims) |
-| 8 | Tools | PayPal AI Toolkit for agentic payments | [PayPal GitHub](https://github.com/paypal/ai-toolkit) |
+## How it works
 
-## Architecture
+1. **Rule engine** (deterministic, no AI): checks the claim and raises fraud flags.
+2. **AI notes audit** (Gemini, optional): if the claim carries clinical notes and the rules approved it, the AI checks
+   whether the notes support the billed procedure. It can only escalate a claim to REVIEW. It can never approve,
+   unfreeze, or lower a risk score, so a malicious note cannot unlock a payout.
+3. **PayPal sandbox**: only an APPROVED claim creates a PayPal order and a payout batch.
+4. **AI explanation** (Gemini): every decision gets a plain-English explanation for the hospital finance officer.
+
+If the AI is unavailable, the rule-engine decision stands and the UI simply omits the AI cards.
 
 ```
 POST /api/claim
       │
       ▼
- fraud-rules.ts        ← NIN check, NHIA ID format, GHOST_ENROLLEE,
-      │                   UPCODING, FALSIFIED_CSECTION, tariff caps
+ fraud-rules.ts ── 7 deterministic flags → risk score → APPROVED / REVIEW / FROZEN
       │
-   FROZEN? ──YES──► Return 200 { decision: "FROZEN" }  (no PayPal call)
+      ├─ APPROVED + clinical notes ──► ai.ts auditNarrative (can only escalate to REVIEW)
       │
-      NO
+      ├─ FROZEN / REVIEW ──► no PayPal call
       │
-      ▼
- paypal.ts
-  createOrder()        ← POST /v2/checkout/orders
-  createPayoutBatch()  ← POST /v1/payments/payouts
+      └─ APPROVED ──► paypal.ts
+                       createOrder()        POST /v2/checkout/orders
+                       createPayoutBatch()  POST /v1/payments/payouts
       │
       ▼
- Return { decision, fraud, paypal: { order_id, payout_batch_id, debug_id } }
+ ai.ts explainDecision  (plain-English explanation of the final decision)
 ```
 
-## PayPal APIs Used
+## Decision logic
+
+Risk score = 25 per flag, plus 40 if any flag is critical.
+**FROZEN** if any critical flag is present or the score is 75 or more. **REVIEW** at 40 or more. Otherwise **APPROVED**.
+
+| Flag | Trigger | Critical |
+|------|---------|----------|
+| `GHOST_ENROLLEE` | patient not in the registry (form checkbox in the demo) | yes |
+| `MISSING_NIN` | no NIN supplied | yes |
+| `INVALID_NIN_FORMAT` | NIN is not exactly 11 digits | yes |
+| `FALSIFIED_CSECTION` | C-Section billed above $500 | yes |
+| `UPCODING` | Normal Delivery billed at $400 or more | yes |
+| `AMOUNT_EXCEEDS_TARIFF` | amount above 1.5× the tariff | no |
+| `INVALID_NHIA_FORMAT` | enrollee ID does not match `NHIA-…` / `NHIS-…` syntax | no |
+| `AI_NARRATIVE_MISMATCH` | raised by the AI audit, not by the rule engine | no |
+
+`DUPLICATE_CLAIM` and `PHANTOM_BILLING` are defined in the type but not implemented yet.
+
+A single non-critical flag scores 25, which stays APPROVED. The payout is then capped:
+**payout = min(claimed amount, statutory tariff)**, so spend authority never exceeds the tariff.
+
+## PayPal usage (sandbox only)
 
 | API | Endpoint | Purpose |
 |-----|----------|---------|
-| Orders v2 | `/v2/checkout/orders` | Create verified payout order |
-| Payouts v1 | `/v1/payments/payouts` | Batch disburse to hospital |
-| OAuth2 | `/v1/oauth2/token` | Client-credentials token |
-| Gemini API | `generativelanguage.googleapis.com` | Plain-English explanation of each decision |
+| OAuth2 | `/v1/oauth2/token` | client-credentials access token |
+| Orders v2 | `/v2/checkout/orders` | creates an order for the payout amount |
+| Payouts v1 | `/v1/payments/payouts` | submits a payout batch to the receiver |
 
-## Fraud Rules
+What a successful call proves: the order comes back `CREATED` (it is not approved or captured by a buyer) and the
+payout batch comes back `PENDING`. These are real PayPal sandbox objects with real IDs and `paypal-debug-id`
+headers. If PayPal rejects the request, the API returns `502` with a `paypal_error` and the UI shows it.
+No identifier in this project is ever generated locally.
 
-| Flag | Trigger | Decision |
-|------|---------|----------|
-| `GHOST_ENROLLEE` | `patientExists === false` | FROZEN |
-| `MISSING_NIN` | `nin` is null/empty | FROZEN |
-| `INVALID_NHIA_FORMAT` | ID doesn't match `NHIA-\d{3,}` | REVIEW |
-| `AMOUNT_EXCEEDS_TARIFF` | amount > tariff × 1.5 | REVIEW/FROZEN |
-| `FALSIFIED_CSECTION` | C-Section > $500 | FROZEN |
-| `UPCODING` | Normal Delivery ≥ $400 | FROZEN |
+## AI usage
 
-## Run Locally
+Gemini is called through the REST API in `lib/ai.ts`. The default model is `gemini-3.5-flash-lite`, overridable with
+`GEMINI_MODEL`. Patient identifiers (NIN, NHIA ID) and emails are never sent to the model. The notes audit uses
+structured JSON output at temperature 0, treats the notes as untrusted data, and is tested in isolation with a stubbed
+model (verdict handling, escalation limits, malformed replies).
+
+## For judges: try it
+
+1. Open the [live demo](https://claimguard-pay.vercel.app). No login is needed.
+2. Click a sample record, then **Run Fraud Check + PayPal**.
+   - *Abuja Hospital*: clean claim, approved, real PayPal sandbox order and payout IDs.
+   - *Ibadan Clinic*: passes every rule, but the notes describe a wellness check-up billed as malaria. The AI audit escalates it to REVIEW.
+   - *Lagos Maternity*, *Kano Specialist*, *Port Harcourt Clinic*: frozen by the rules, PayPal never called.
+3. Check the deployment: [`/api/claim`](https://claimguard-pay.vercel.app/api/claim) reports which services are configured (booleans only, no secrets).
+4. Real-run evidence: [`public/measured-live.json`](./public/measured-live.json), produced by `scripts/record-measured.mjs`.
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local
-# Edit .env.local with your PayPal sandbox credentials
+cp .env.example .env.local   # then fill in your sandbox credentials
 npm run dev
 ```
 
-## Test Scenarios
+| Variable | Purpose |
+|----------|---------|
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | PayPal **sandbox** app credentials |
+| `PAYPAL_ENVIRONMENT` | `sandbox` (anything other than `live` is treated as sandbox) |
+| `PAYPAL_PAYEE_EMAIL`, `PAYPAL_PAYOUT_RECEIVER_EMAIL` | optional: pin the sandbox accounts used for approved claims |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Gemini key, optional model override |
+
+Example requests (synthetic test data):
 
 ```bash
-# 1. Block ghost enrollee
-curl -X POST http://localhost:3000/api/claim \
-  -H "Content-Type: application/json" \
+# Approved: real PayPal sandbox order + payout
+curl -X POST http://localhost:3000/api/claim -H "Content-Type: application/json" \
+  -d '{"nin":"10000000001","nhiaId":"NHIA-789012","procedure":"Malaria","amount":80,"hospitalEmail":"sb-xxxx@business.example.com","patientExists":true}'
+
+# Frozen: ghost enrollee
+curl -X POST http://localhost:3000/api/claim -H "Content-Type: application/json" \
   -d '{"patientExists":false}'
 
-# 2. Approve legit claim
-curl -X POST http://localhost:3000/api/claim \
-  -H "Content-Type: application/json" \
-  -d '{"nin":"31005502980","nhiaId":"NHIA-789","hospitalEmail":"hospital@abuja.ng","patientExists":true,"procedure":"Malaria","amount":80}'
-
-# 3. Trigger upcoding block
-curl -X POST http://localhost:3000/api/claim \
-  -H "Content-Type: application/json" \
-  -d '{"procedure":"Normal Delivery","amount":500}'
+# AI escalation: rules approve, notes contradict the billing
+curl -X POST http://localhost:3000/api/claim -H "Content-Type: application/json" \
+  -d '{"nin":"10000000001","nhiaId":"NHIA-440271","procedure":"Malaria","amount":85,"hospitalEmail":"x@y.com","patientExists":true,"clinicalNotes":"Routine wellness check-up. No fever, no symptoms."}'
 ```
 
-## Measured Results
+Record fresh measurements against any deployment: `node scripts/record-measured.mjs https://your-deployment.example`
 
-See [`measured-live.json`](https://claimguard-pay.vercel.app/measured-live.json) (local: [`public/measured-live.json`](./public/measured-live.json)) — 3 recorded live takes with `paypal_debug_id` and `execution_time_ms`.
+## Known limitations
+
+- The registry check is a form checkbox and the NIN check is format-only. There is no live NIMC or NHIA lookup.
+- Tariffs and caps in `lib/fraud-rules.ts` are illustrative demo values. Verify them against official NHIA schedules before any real use.
+- PayPal runs in the sandbox only. Orders are created but not captured, and payouts stay `PENDING`.
+- Gemini free-tier limits can make the AI cards disappear under heavy use. The rule-engine decision is unaffected.
+
+## Sourced evidence
+
+| # | Stat | Focus | Source |
+|---|------|-------|--------|
+| 1 | 90% | Nigerians lack health insurance | [Punch / HCPAN](https://punchng.com/health-insurance-over-90-of-nigerians-still-uninsured-says-hcpan/) |
+| 2 | 10% | National insurance coverage rate | [BusinessDay](https://businessday.ng/news/article/only-10-of-nigerians-covered-by-health-insurance-nhia-boss/) |
+| 3 | 22M+ | Nigerians on health insurance (+35%) | [Vanguard](https://www.vanguardngr.com/2026/07/nigerians-on-health-insurance-hit-22million-nhia/) |
+| 4 | 75% | Out-of-pocket health expenditure | [Nairametrics](https://nairametrics.com/2024/09/03/out-of-pocket-expenses-dominate-nigerias-health-spending-at-75-report/) |
+| 5 | Legal | Healthcare fraud and abuse analysis | [BarristerNG](https://barristerng.com/health-care-fraud-and-abuse-a-growing-concern-by-ayegbusi-oluwafisayomi-evelyn/) |
+| 6 | 23K | Ghost enrollees expelled | [Punch](https://punchng.com/23000-ghost-subscribers-enrol-for-health-insurance-scheme/) |
+| 7 | 28–35% | Medical claims fraudulent in East Africa | [Standard Media](https://www.standardmedia.co.ke/health/health-science/article/2001498291/how-new-medical-scheme-hopes-to-evade-fraudulent-claims) |
 
 ## Stack
 
-- **Next.js 14** (App Router, TypeScript)
-- **PayPal REST APIs** (Orders v2, Payouts v1, OAuth2)
-- **Gemini API** — explains decisions in plain English (the decision itself is made by the deterministic rule engine)
+Next.js 14 (App Router, TypeScript) · PayPal REST APIs (OAuth2, Orders v2, Payouts v1) · Gemini API · Vercel
+
+## License
+
+[MIT](./LICENSE)
